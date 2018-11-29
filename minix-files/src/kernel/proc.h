@@ -40,6 +40,9 @@ struct proc {
   struct mem_map p_map[NR_SEGS];/* memory map */
   pid_t p_pid;			/* process id passed in from MM */
   int p_priority;		/* task, server, or user process */
+  int p_subpriority		/* normal or background #SOI #PROJECT1 */
+
+  int starvation_counter	/* count shed() cycles after process last activation #SOI #PROJECT1 */ 
 
   clock_t user_time;		/* user time in ticks */
   clock_t sys_time;		/* sys time in ticks */
@@ -78,6 +81,12 @@ struct proc {
 #define PPRI_USER	3	/* User process */
 #define PPRI_IDLE	4	/* Idle process */
 
+/* Values for p_subpriority #SOI #PROJECT1 */
+#define PSPRI_NONE	 0	/* Subpriority unused*/
+#define PSPRI_NORMAL	 1	/* Normal process subpriority*/
+#define PSPRI_BACKGROUND 2	/* Background process subpriority */
+
+
 /* Magic process table addresses. */
 #define BEG_PROC_ADDR (&proc[0])
 #define END_PROC_ADDR (&proc[NR_TASKS + NR_PROCS])
@@ -95,6 +104,11 @@ struct proc {
 #define istaskp(p)        ((p)->p_priority == PPRI_TASK)
 #define isservp(p)        ((p)->p_priority == PPRI_SERVER)
 #define isuserp(p)        ((p)->p_priority == PPRI_USER)
+/*#SOI #PROJECT1 */
+#define isemptysp(p)      ((p)->p_subpriority == PSPRI_NONE)
+#define isnormalsp(p)     ((p)->p_subpriority == PSPRI_NORMAL)
+#define isbackgroundsp(p) ((p)->p_subpriority == PSPRI_BACKGROUND)
+/*---------*/
 #define proc_addr(n)      (pproc_addr + NR_TASKS)[(n)]
 #define cproc_addr(n)     (&(proc + NR_TASKS)[(n)])
 #define proc_number(p)    ((p)->p_nr)

@@ -231,6 +231,8 @@ register message *m_ptr;	/* pointer to request message */
   rpc->p_pid = m_ptr->PID;	/* install child's pid */
   rpc->p_reg.retreg = 0;	/* child sees pid = 0 to know it is child */
 
+  rpc->starvation_counter=0; /* #SOI #PROJECT1  */
+
   rpc->user_time = 0;		/* set all the accounting times to 0 */
   rpc->sys_time = 0;
   rpc->child_utime = 0;
