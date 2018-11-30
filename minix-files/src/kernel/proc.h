@@ -40,9 +40,9 @@ struct proc {
   struct mem_map p_map[NR_SEGS];/* memory map */
   pid_t p_pid;			/* process id passed in from MM */
   int p_priority;		/* task, server, or user process */
-  int p_subpriority		/* normal or background #SOI #PROJECT1 */
+  int p_subpriority;		/* normal or background #SOI #PROJECT1 */
 
-  int starvation_counter	/* count shed() cycles after process last activation #SOI #PROJECT1 */ 
+  int starvation_counter;	/* count shed() cycles after process last activation #SOI #PROJECT1 */ 
 
   clock_t user_time;		/* user time in ticks */
   clock_t sys_time;		/* sys time in ticks */

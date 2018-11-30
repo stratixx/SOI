@@ -80,12 +80,12 @@ PUBLIC void main()
 		hdrindex = 0;		/* and use the first a.out header */
 		rp->p_priority = PPRI_TASK;
 		rp->p_subpriority = PSPRI_NONE;
-		starvation_counter = 0;
+		rp->starvation_counter = 0;
 	} else {
 		hdrindex = 1 + t;	/* MM, FS, INIT follow the kernel */
 		rp->p_priority = t < LOW_USER ? PPRI_SERVER : PPRI_USER;
 		rp->p_subpriority = t < LOW_USER ? PSPRI_NONE : PSPRI_NORMAL;
-		starvation_counter = 0;
+		rp->starvation_counter = 0;
 	}
 
 	/* The bootstrap loader has created an array of the a.out headers at
@@ -136,8 +136,8 @@ PUBLIC void main()
   proc[NR_TASKS+INIT_PROC_NR].p_pid = 1;/* INIT of course has pid 1 */
   bill_ptr = proc_addr(IDLE);		/* it has to point somewhere */
   proc_addr(IDLE)->p_priority = PPRI_IDLE;
-  proc_addr(IDLE)->p_subpriority = PSPRI_NONE;
-  starvation_counter = 0;
+  proc_addr(IDLE)->p_subpriority = PSPRI_NONE; /* #SOI #PROJECT1 */
+  proc_addr(IDLE)->starvation_counter = 0; /* #SOI #PROJECT1 */
   lock_pick_proc();
 
   /* Now go to the assembly code to start running the current process. */
