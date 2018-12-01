@@ -1,4 +1,3 @@
-#define NCALLS		  79	/* number of system calls allowed */
 
 #define EXIT		   1 
 #define FORK		   2 
@@ -65,4 +64,8 @@
 
 #define REBOOT		  76
 #define SVRCTL		  77
-#define GET_PROCNR    78
+#define GET_PROCNR	  78
+#define GET_PSPRI	  79	/* get process subpriority, PSPRI_NONE, PSPRI_NORMAL or PSPRI_BACKGROUND. #SOI #PROJECT1 */
+#define SET_PSPRI	  80	/* set process subpriority, PSPRI_NONE, PSPRI_NORMAL or PSPRI_BACKGROUND. #SOI #PROJECT1 */
+
+#define NCALLS		  81	/* number of system calls allowed */

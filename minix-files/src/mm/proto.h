@@ -3,8 +3,10 @@
 struct mproc;
 struct stat;
 
-/* getprocnr.c */
+/* main.c */
 _PROTOTYPE( int do_getprocnr, (void) );
+_PROTOTYPE( int do_getpspri, (void) );
+_PROTOTYPE( int do_setpspri, (void) );
 
 /* alloc.c */
 _PROTOTYPE( phys_clicks alloc_mem, (phys_clicks clicks)			);

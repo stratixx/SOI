@@ -22,16 +22,8 @@
 FORWARD _PROTOTYPE( void get_work, (void)				);
 FORWARD _PROTOTYPE( void mm_init, (void)				);
 
-PUBLIC int do_getprocnr(void)
-{
-	int procNr;
-	for(procNr = 0; procNr < NR_PROCS; ++procNr)
-	{
-		if( ( (mproc[procNr].mp_flags & IN_USE) != 0) && (mproc[procNr].mp_pid == pid) )
-			return procNr;
-	}
-	return ENOENT;
-} 
+/* include my own syscalls #SOI #PROJECT1 */
+#include "my_syscall.h"
 
 #define click_to_round_k(n) \
 	((unsigned) ((((unsigned long) (n) << CLICK_SHIFT) + 512) / 1024))

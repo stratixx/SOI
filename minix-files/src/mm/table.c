@@ -95,6 +95,8 @@ _PROTOTYPE (int (*call_vec[NCALLS]), (void) ) = {
 	do_svrctl,	/* 77 = svrctl	*/
 
 	do_getprocnr,	/* 78 = GETPROCNR #SOI #LAB1	*/
+	do_getpspri,	/* 79 = GET_PSPRI - get process subpriority #SOI #PROJECT1 */ 
+	do_setpspri,	/* 80 = SET_PSPRI - set process subpriority #SOI #PROJECT1 */
 };
 /* This should not fail with "array size is negative": */
 extern int dummy[sizeof(call_vec) == NCALLS * sizeof(call_vec[0]) ? 1 : -1];
