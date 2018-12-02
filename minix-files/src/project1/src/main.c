@@ -4,41 +4,50 @@
 
 /*int get_subpriority(void);*/
 void set_subpriority( int );
+int main_child(int);
+void fork_child(int);
 
 int main (int argc, char* argv[])
 {
-	int result;
-	int n;
-	int arg;
-
-	set_subpriority(PSPRI_NONE);
-	set_subpriority(PSPRI_NORMAL);
-	set_subpriority(PSPRI_BACKGROUND);
-	set_subpriority(3);
-	set_subpriority(4);
-
-	/* Brak argumentu */
-	if(argc == 1)
-	{/*
-		printf("Argument needed!\n"); 
-		return -1;*/
-	}
-/*
-	arg = atoi(argv[1]);
-	for(n=0;n<10;n++)
-	{
-		result = getprocnr(arg+n);
-		printf("PID: %d --> index: ", arg+n);
-		if(result !=-1) 
-			printf("%d\n",result);
-		else 
-			printf("NOT FOUND!, ERROR: %d\n",errno);
-	}
-*/
-	for(n=0; n<1000000; ++n)
-		arg = n;
+	fork_child(PSPRI_BACKGROUND);
+	fork_child(PSPRI_NORMAL);
+	fork_child(PSPRI_BACKGROUND);
+	fork_child(PSPRI_NORMAL);
+	fork_child(PSPRI_BACKGROUND);
+	fork_child(PSPRI_NORMAL);
 	return 0;
 } 
+
+int main_child(int subpriority)
+{
+	int n = 5;
+	long unsigned k;
+	char * normal = 	"NORMAL    ";
+	char * background = "BACKGROUND";
+	char * wsk = subpriority==1?normal:background;
+
+	printf("__%s start: PID=%d;__\n", wsk, getpid());
+
+	for(n=0;n<5;++n)
+	{
+		printf("__%s loop : PID=%d;__\n", wsk, getpid());
+		for(k=0; k<(10000000/subpriority); ++k);
+	}
+
+	printf("__%s end  : PID=%d;__\n", wsk, getpid());
+	return 0;
+}
+
+void fork_child(int subpriority)
+{
+	int res=1;
+	if( fork()==0 )
+	{
+		set_subpriority(subpriority); /* new subpriority to child */
+		exit(main_child(subpriority));
+	}
+	/* only parrent will return from function */
+}
 
 void set_subpriority( int subpriority )
 {
