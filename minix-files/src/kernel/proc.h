@@ -63,6 +63,9 @@ struct proc {
   char p_name[16];		/* name of the process */
 };
 
+/* background process anti-starvation counter max value */
+#define SCHED_STARVATION 60
+
 /* Guard word for task stacks. */
 #define STACK_GUARD	((reg_t) (sizeof(reg_t) == 2 ? 0xBEEF : 0xDEADBEEF))
 

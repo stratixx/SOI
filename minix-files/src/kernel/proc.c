@@ -427,7 +427,7 @@ register struct proc *rp;	/* this process is no longer runnable */
   xp->p_nextready = xp->p_nextready->p_nextready;
   if (*qtail == rp) *qtail = xp;
 }
-#define SCHED_STARVATION 40
+
 /*===========================================================================*
  *				sched					     * 
  *===========================================================================*/
@@ -459,7 +459,7 @@ PRIVATE void sched()
     rdy_tail[USER_Q]->p_nextready = NIL_PROC;
 
     p = rdy_head[USER_Q];
-    if( (p == NIL_PROC) ) break;
+    if( (p == NIL_PROC)/*||(p==breaker)*/ ) break;
     if( (p->p_nextready == NIL_PROC) ) break;
     if( p->p_nextready == breaker ) break;
     

@@ -2,7 +2,6 @@
 #include <lib.h>
 #include "../inc/main.h"
 
-/*int get_subpriority(void);*/
 void set_subpriority( int );
 int main_child(int);
 void fork_child(int);
@@ -43,7 +42,7 @@ int main_child(int subpriority)
 	for(n=0;n<50;++n)
 	{
 		printf("__%s loop : PID=%d;__\n", wsk, getpid());
-		for(k=0; k<(1000000/subpriority); ++k);
+		for(k=getpid()*10000; k<(8000000); ++k);
 	}
 
 	printf("__%s end  : PID=%d;__\n", wsk, getpid());
@@ -71,16 +70,3 @@ void set_subpriority( int subpriority )
 	/*printf("setpspri: result=%d; m_type=%d; m1_i1=%d; m1_i2=%d; m1_i3=%d;\n", result, msg.m_type, msg.m1_i1, msg.m1_i2, msg.m1_i3 );
 */
 }
-/*
-int get_subpriority(void)
-{
-	message msg;
-	int result;	
-
-	result = _syscall( MM, 79, &msg ); 
-	printf("getpspri: result=%d; m_type=%d; m1_i1=%d; m1_i2=%d; m1_i3=%d;\n", result, msg.m_type, msg.m1_i1, msg.m1_i2, msg.m1_i3 );
-
-
-	return msg.m1_i2;
-}
-*/
