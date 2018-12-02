@@ -146,6 +146,8 @@ FORWARD _PROTOTYPE( int do_getmap, (message *m_ptr) );
 FORWARD _PROTOTYPE( int do_sysctl, (message *m_ptr) );
 FORWARD _PROTOTYPE( int do_puts, (message *m_ptr) );
 FORWARD _PROTOTYPE( int do_findproc, (message *m_ptr) );
+FORWARD _PROTOTYPE( int do_getpspri, (message *m_ptr) ); /* #SOI #PROJECT1 */
+FORWARD _PROTOTYPE( int do_setpspri, (message *m_ptr) ); /* #SOI #PROJECT1 */
 
 
 /*===========================================================================*
@@ -181,6 +183,8 @@ PUBLIC void sys_task()
 	    case SYS_SYSCTL:	r = do_sysctl(&m);	break;
 	    case SYS_PUTS:	r = do_puts(&m);	break;
 	    case SYS_FINDPROC:	r = do_findproc(&m);	break;
+	    case SYS_GETPSPRI:	r = do_getpspri(&m);	break;
+	    case SYS_SETPSPRI:	r = do_setpspri(&m);	break;
 	    default:		r = E_BAD_FCN;
 	}
 
@@ -1013,6 +1017,60 @@ message *m_ptr;			/* pointer to request message */
 	}
   }
   return(ESRCH);
+}
+
+/*===========================================================================*
+ *				do_setpspri			     *
+ *===========================================================================*/
+PRIVATE int do_setpspri(m_ptr)
+message *m_ptr;			/* pointer to request message */
+{
+  /* Set subpriority to selected process
+  * m1_i3 --> PID of selected process
+  * m1_i2 --> new subpriority
+   */
+  struct proc *pp;
+/*
+  for( pp=BEG_USER_ADDR; pp<END_PROC_ADDR; ++pp )
+    if( pp->p_pid == m_ptr->m1_i3 )
+      break;
+  if( pp==END_PROC_ADDR )
+    return(ESRCH); 
+    */
+  pp = proc_addr(m_ptr->m1_i1); /* m1_i1 = caller proc number */
+  if( (pp<BEG_USER_ADDR)||(pp>=END_PROC_ADDR) )
+    return(ESRCH);
+  if( ((m_ptr->m1_i2)!=PSPRI_NONE)&&((m_ptr->m1_i2)!=PSPRI_NORMAL)&&((m_ptr->m1_i2)!=PSPRI_BACKGROUND) )
+    return(EINVAL);
+  pp->p_subpriority = m_ptr->m1_i2;
+
+  return(0);
+}
+
+/*===========================================================================*
+ *				do_getpspri			     *
+ *===========================================================================*/
+PRIVATE int do_getpspri(m_ptr)
+message *m_ptr;			/* pointer to request message */
+{
+  /* Set subpriority to selected process
+  * m1_i3 --> PID of selected process
+  * m1_i2 --> readed subpriority
+   */
+  struct proc *pp;
+  /*
+  for( pp=BEG_USER_ADDR; pp<END_PROC_ADDR; ++pp )
+    if( pp->p_pid == m_ptr->m1_i3 )
+      break;
+  if( pp==END_PROC_ADDR )
+    return(ESRCH); 
+  */
+  pp = proc_addr(m_ptr->m1_i1); /* m1_i1 = caller proc number */
+  if( (pp<BEG_USER_ADDR)||(pp>=END_PROC_ADDR) )
+    return(ESRCH);
+  m_ptr->m1_i2 = pp->p_subpriority;
+
+  return(0);
 }
 
 /*===========================================================================*

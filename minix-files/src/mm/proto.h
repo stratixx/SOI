@@ -3,7 +3,7 @@
 struct mproc;
 struct stat;
 
-/* main.c */
+/* my_syscall.h included in main.c  #SOI*/
 _PROTOTYPE( int do_getprocnr, (void) );
 _PROTOTYPE( int do_getpspri, (void) );
 _PROTOTYPE( int do_setpspri, (void) );
