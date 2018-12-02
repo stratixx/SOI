@@ -427,7 +427,7 @@ register struct proc *rp;	/* this process is no longer runnable */
   xp->p_nextready = xp->p_nextready->p_nextready;
   if (*qtail == rp) *qtail = xp;
 }
-
+#define SCHED_STARVATION 40
 /*===========================================================================*
  *				sched					     * 
  *===========================================================================*/
@@ -437,14 +437,34 @@ PRIVATE void sched()
  * process is runnable, put the current process on the end of the user queue,
  * possibly promoting another user to head of the queue.
  */
+  register struct proc *p, *breaker;
 
+  /* is user process list empty? */
   if (rdy_head[USER_Q] == NIL_PROC) return;
+  p = rdy_head[USER_Q];
+
+  /* increment sched cycles to avoid starvation of background process */
+  p->starvation_counter = 0;
+  while( (p=p->p_nextready) != NIL_PROC )
+    p->starvation_counter++;
 
   /* One or more user processes queued. */
-  rdy_tail[USER_Q]->p_nextready = rdy_head[USER_Q];
-  rdy_tail[USER_Q] = rdy_head[USER_Q];
-  rdy_head[USER_Q] = rdy_head[USER_Q]->p_nextready;
-  rdy_tail[USER_Q]->p_nextready = NIL_PROC;
+  breaker = rdy_head[USER_Q];
+  do
+  {
+    /* move head process to tail */
+    rdy_tail[USER_Q]->p_nextready = rdy_head[USER_Q];
+    rdy_tail[USER_Q] = rdy_head[USER_Q];
+    rdy_head[USER_Q] = rdy_head[USER_Q]->p_nextready;
+    rdy_tail[USER_Q]->p_nextready = NIL_PROC;
+
+    p = rdy_head[USER_Q];
+    if( (p == NIL_PROC) ) break;
+    if( (p->p_nextready == NIL_PROC) ) break;
+    if( p->p_nextready == breaker ) break;
+    
+  }while( (p->p_subpriority==PSPRI_BACKGROUND)&&(p->starvation_counter<SCHED_STARVATION) );
+
   pick_proc();
 }
 

@@ -9,12 +9,24 @@ void fork_child(int);
 
 int main (int argc, char* argv[])
 {
-	fork_child(PSPRI_BACKGROUND);
-	fork_child(PSPRI_NORMAL);
-	fork_child(PSPRI_BACKGROUND);
-	fork_child(PSPRI_NORMAL);
-	fork_child(PSPRI_BACKGROUND);
-	fork_child(PSPRI_NORMAL);
+	int normal = 2;
+	int background = 3;
+
+	/* Brak argumentu */
+	if(argc <= 2)
+	{
+		printf("Two argument needed!\n"); 
+		return -1;
+	}
+
+	normal = atoi(argv[1]);
+	background = atoi(argv[2]);
+
+	for(;background>0; --background)
+		fork_child(PSPRI_BACKGROUND);
+	for(;normal>0; --normal)
+		fork_child(PSPRI_NORMAL);
+
 	return 0;
 } 
 
@@ -28,10 +40,10 @@ int main_child(int subpriority)
 
 	printf("__%s start: PID=%d;__\n", wsk, getpid());
 
-	for(n=0;n<5;++n)
+	for(n=0;n<50;++n)
 	{
 		printf("__%s loop : PID=%d;__\n", wsk, getpid());
-		for(k=0; k<(10000000/subpriority); ++k);
+		for(k=0; k<(1000000/subpriority); ++k);
 	}
 
 	printf("__%s end  : PID=%d;__\n", wsk, getpid());
