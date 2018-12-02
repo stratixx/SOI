@@ -1026,7 +1026,7 @@ PRIVATE int do_setpspri(m_ptr)
 message *m_ptr;			/* pointer to request message */
 {
   /* Set subpriority to selected process
-  * m1_i3 --> PID of selected process
+  * m1_i3 --> number of selected process
   * m1_i2 --> new subpriority
    */
   struct proc *pp;
@@ -1044,6 +1044,7 @@ message *m_ptr;			/* pointer to request message */
     return(EINVAL);
   pp->p_subpriority = m_ptr->m1_i2;
 
+  printf("___do_setpspri: p_spri=%d; n_proces=%d;___\n", pp->p_subpriority, m_ptr->m1_i1);
   return(0);
 }
 
@@ -1054,7 +1055,7 @@ PRIVATE int do_getpspri(m_ptr)
 message *m_ptr;			/* pointer to request message */
 {
   /* Set subpriority to selected process
-  * m1_i3 --> PID of selected process
+  * m1_i3 --> number of selected process
   * m1_i2 --> readed subpriority
    */
   struct proc *pp;
@@ -1069,7 +1070,7 @@ message *m_ptr;			/* pointer to request message */
   if( (pp<BEG_USER_ADDR)||(pp>=END_PROC_ADDR) )
     return(ESRCH);
   m_ptr->m1_i2 = pp->p_subpriority;
-
+  printf("___do_setpspri: p_spri=%d; n_proces=%d;___\n", pp->p_subpriority, m_ptr->m1_i1);
   return(0);
 }
 
