@@ -6,7 +6,7 @@
 
 int main (int argc, char* argv[])
 {
-    display("producer");
+    display("producer\n");
 
     return 0;
 }
