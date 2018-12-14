@@ -4,9 +4,13 @@
 #include "../inc/producer.h"
 #include "../inc/tools.h"
 
-int main (int argc, char* argv[])
+int producer(int argc, char* argv[])
 {
-    display("producer\n");
+    printf("Producer start\n");
+    int n;
+    for(n=0; n<argc; n++)
+        printf("Producer: #%d %s\n", n, argv[n]);
 
+    printf("Producer end\n");
     return 0;
 }

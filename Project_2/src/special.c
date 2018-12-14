@@ -4,9 +4,13 @@
 #include "../inc/special.h"
 #include "../inc/tools.h"
 
-int main (int argc, char* argv[])
+int special(int argc, char* argv[])
 {
-    display("special\n");
+    printf("Special start\n");
+    int n;
+    for(n=0; n<argc; n++)
+        printf("Special: #%d %s\n", n, argv[n]);
 
+    printf("Special end\n");
     return 0;
 }
