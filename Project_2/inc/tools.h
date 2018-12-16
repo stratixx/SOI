@@ -18,9 +18,9 @@
 #define PROSUMER_SLEEP_TIME     (500*1000)
 
 #define QUEUE_NUMBER            3
-#define QUEUE_SIZE              9
+#define QUEUE_SIZE              16
 #define QUEUE_NO_MSG            QUEUE_SIZE
-#define KEY_OFFSET              8100+31+31+31+31
+#define KEY_OFFSET              8100
 #define QUEUE_KEY(queue)        (KEY_OFFSET+queue-'A')
 
 #define MESSAGE_PRODUCER_LENGTH 15

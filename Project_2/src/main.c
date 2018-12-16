@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
     fork_child(special, 1, args);
 
     count = 0;
-    while( count <= (60*1000/250))
+    while( count <= (5*60*1000/250))
     {
         MAIN_PRINT_CMD(for(tmp=0; tmp<QUEUE_NUMBER; tmp++) printf("%c: %d | ", tmp+'A', queue[tmp]->count);)
         MAIN_PRINT_CMD(printf("time: %.2fs\n", (float)(count*250.0/1000));)
