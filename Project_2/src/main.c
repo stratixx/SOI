@@ -20,10 +20,10 @@ int main(int argc, char * argv[])
     int full_id[QUEUE_NUMBER];
     int empty_id[QUEUE_NUMBER];
     int mutex_id[QUEUE_NUMBER];
+    int tmp, count;
 
     char * args[3];
 
-	int tmp;
 
     for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
     {
@@ -34,7 +34,7 @@ int main(int argc, char * argv[])
         full_id[tmp] = semget(SEM_FULL_KEY(tmp+'A'), 1, IPC_CREAT|IPC_EXCL|0600);	
         semctl(full_id[tmp], 0, SETVAL, (int)0);        
         empty_id[tmp] = semget(SEM_EMPTY_KEY(tmp+'A'), 1, IPC_CREAT|IPC_EXCL|0600);
-        semctl(empty_id[tmp], 0, SETVAL, QUEUE_SIZE);        
+        semctl(empty_id[tmp], 0, SETVAL, QUEUE_SIZE);          
         mutex_id[tmp] = semget(SEM_MUTEX_KEY(tmp+'A'), 1, IPC_CREAT|IPC_EXCL|0600);
         semctl(mutex_id[tmp], 0, SETVAL, (int)1);
     }
@@ -71,10 +71,19 @@ int main(int argc, char * argv[])
 
     fork_child(special, 1, args);
 
-	while(wait(&tmp) != -1);	
+    count = 0;
+    while( count <= (60*1000/250))
+    {
+        MAIN_PRINT_CMD(for(tmp=0; tmp<QUEUE_NUMBER; tmp++) printf("%c: %d | ", tmp+'A', queue[tmp]->count);)
+        MAIN_PRINT_CMD(printf("time: %.2fs\n", (float)(count*250.0/1000));)
+        
+        usleep(1000*250);
+        count++;
+    }
 	
-    for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
-	    shmdt(queue[tmp]);
+	while(wait(&tmp) != -1)
+    {
+    }	
 
 	return 0;
 }
