@@ -2,6 +2,6 @@
 #define PROTECTOR_H
 
 
-int protector(int argc, char* argv[]);
+void* protector(void*);
 
 #endif

@@ -12,8 +12,10 @@
 extern Queue queue[QUEUE_NUMBER];
 extern int test;
 
-int prosumer(int argc, char* argv[])
-{    
+void* prosumer(void* args)
+{
+	int argc = ((arg_t*)args)->argc;
+	char ** argv= ((arg_t*)args)->argv;
     char queue_name;
     Queue * my_queue;
     Message_t msg, rec_msg;

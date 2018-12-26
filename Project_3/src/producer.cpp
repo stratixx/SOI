@@ -13,8 +13,10 @@
 extern Queue queue[QUEUE_NUMBER];
 extern int test;
 
-int producer(int argc, char* argv[])
+void* producer(void* args)
 {
+	int argc = ((arg_t*)args)->argc;
+	char ** argv= ((arg_t*)args)->argv;
     char queue_name;
     Message_t msg;
 	int tmp;

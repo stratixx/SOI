@@ -46,6 +46,13 @@
 
 /* ----------------------------------------------------------- */
 
+/* struktura argumentów wywołania programu/wątku */
+typedef struct 
+{
+    int argc;
+    char ** argv;
+}arg_t;
+
 /*
 *
 */

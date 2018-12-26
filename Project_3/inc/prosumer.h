@@ -2,7 +2,7 @@
 #define PROSUMER_H
 
 
-int prosumer(int argc, char* argv[]);
+void* prosumer(void*);
 
 
 #endif

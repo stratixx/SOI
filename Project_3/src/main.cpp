@@ -1,3 +1,5 @@
+
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <semaphore.h>
@@ -83,12 +85,18 @@ int main(int argc, char * argv[])
 /*
 *
 */
-void fork_child(int (*child)(int, char**), int argc, char * argv[])
+void fork_child(void* (*child)(void*), int argc, char * argv[])
 {
-	if( fork()==0 )
-	{
-        // only child will enter here
-		exit(child(argc, argv));
-	}
-	/* only parrent will return from function */
+    /* this variable is our reference to the second thread */
+    pthread_t new_thread;
+    arg_t args;
+    args.argc = argc;
+    args.argv = argv;
+
+    /* create a second thread */
+    if(pthread_create(&new_thread, NULL, child, &args)) {
+
+    printf("Error creating thread\n");
+
+    }
 }

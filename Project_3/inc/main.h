@@ -2,7 +2,7 @@
 #define MAIN_H
 
 
-void fork_child(int (*child)(int, char**), int argc, char * argv[]);
+void fork_child(void* (*child)(void*), int argc, char * argv[]);
 
 
 #endif

@@ -12,8 +12,10 @@
 extern Queue queue[QUEUE_NUMBER];
 
 
-int protector(int argc, char* argv[])
-{    
+void* protector(void* args)
+{
+	int argc = ((arg_t*)args)->argc;
+	char ** argv= ((arg_t*)args)->argv;
     // dostaje jako argument częstotliwosć akcji
     Message_t msg;
     int tmp, readed;

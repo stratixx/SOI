@@ -2,6 +2,6 @@
 #define SPECIAL_H
 
 
-int special(int argc, char* argv[]);
+void* special(void*);
 
 #endif

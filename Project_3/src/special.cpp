@@ -12,8 +12,10 @@
 extern Queue queue[QUEUE_NUMBER];
 
 
-int special(int argc, char* argv[])
-{    
+void* special(void* args)
+{
+	int argc = ((arg_t*)args)->argc;
+	char ** argv= ((arg_t*)args)->argv; 
     Message_t msg;
     int tmp, readed;
 	struct sembuf buf;
