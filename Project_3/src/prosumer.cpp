@@ -18,27 +18,17 @@ int prosumer(int argc, char* argv[])
     Queue * my_queue;
     Message_t msg, rec_msg;
     float pr;
-    int my_full_id, my_empty_id, my_mutex_id;
-    int full_id[QUEUE_NUMBER], empty_id[QUEUE_NUMBER], mutex_id[QUEUE_NUMBER];
     int tmp, readed;
+    int instant_read = 0;
 
     sprintf(msg.producer, "_Prosumer_%s_", argv[1] );  
     sscanf(argv[2], "%f", &pr);    
     queue_name = *argv[1];  
     SUBPROCESSES_PRINT_CMD(printf("%s start with pr=%1.3f\n", msg.producer, pr);)
     
-    for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
-    {
-        full_id[tmp] =  semget(SEM_FULL_KEY(tmp+'A') , 1, 0600);	     
-        empty_id[tmp] = semget(SEM_EMPTY_KEY(tmp+'A'), 1, 0600);     
-        mutex_id[tmp] = semget(SEM_MUTEX_KEY(tmp+'A'), 1, 0600);
-    }
 
 	my_queue = &queue[queue_name-'A'];
 
-	my_full_id  = full_id[queue_name-'A'];
-	my_empty_id = empty_id[queue_name-'A'];
-	my_mutex_id = mutex_id[queue_name-'A'];	
 
     msg.priority = 0;
     msg.valid = 1;
@@ -48,18 +38,21 @@ int prosumer(int argc, char* argv[])
 	while(1)
 	{	        
 		/* receive message */
-		sem_down(my_full_id, 0);
-		sem_down(my_mutex_id, 0);
-
         my_queue->read_msg(&rec_msg);
 		SUBPROCESSES_PRINT_CMD(printf("%s received msg from %s: \"%3s\"; %d/%d\n", msg.producer, rec_msg.producer, rec_msg.data, my_queue->count, QUEUE_SIZE);)
-
-		sem_up(my_mutex_id, 0);
-		sem_up(my_empty_id, 0);	
 		
         /* wait */
-        usleep(PROSUMER_SLEEP_TIME);
+        if( instant_read==0 )
+            usleep(PROSUMER_SLEEP_TIME);
+        else
+            instant_read--;
 
+        /* if received message from protector then read 5 messages without waiting */
+        if( rec_msg.priority==2 )
+        {
+            instant_read = 5;
+            continue;
+        }
         /* remove empty message */
         if( rec_msg.data[0]==0 )
             continue;
@@ -82,14 +75,9 @@ int prosumer(int argc, char* argv[])
         }
 
         /* send message to selected queue */
-		sem_down(empty_id[readed], 0);
-		sem_down(mutex_id[readed], 0);
-
 		queue[readed].send_msg(&msg);
 		SUBPROCESSES_PRINT_CMD(printf("%s send to queue \"%c\" msg: \"%3s\"; %d/%d\n", msg.producer, readed+'A', msg.data, queue[readed].count, QUEUE_SIZE);)
 
-		sem_up(mutex_id[readed], 0);
-		sem_up(full_id[readed], 0);	
 	}	
 
 

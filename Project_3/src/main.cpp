@@ -20,28 +20,15 @@ Queue queue[QUEUE_NUMBER];
 
 int main(int argc, char * argv[])
 {
-    int full_id[QUEUE_NUMBER];
-    int empty_id[QUEUE_NUMBER];
-    int mutex_id[QUEUE_NUMBER];
     int tmp, count;
 
     char * args[3];
 
 
-    for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
-    {
-        full_id[tmp] = semget(SEM_FULL_KEY(tmp+'A'), 1, IPC_CREAT|IPC_EXCL|0600);	
-        semctl(full_id[tmp], 0, SETVAL, (int)0);        
-        empty_id[tmp] = semget(SEM_EMPTY_KEY(tmp+'A'), 1, IPC_CREAT|IPC_EXCL|0600);
-        semctl(empty_id[tmp], 0, SETVAL, QUEUE_SIZE);          
-        mutex_id[tmp] = semget(SEM_MUTEX_KEY(tmp+'A'), 1, IPC_CREAT|IPC_EXCL|0600);
-        semctl(mutex_id[tmp], 0, SETVAL, (int)1);
-    }
-
-	if(argc != 3 )
+	if(argc != 2 )
 	{
 		printf("Bad number of input arguments!\n");
-		printf("Should be: project3 <prosumer_pr> <protector_freq>\n");
+		printf("Should be: project3.bin <prosumer_pr>\n");
 		return -2;
 	}
 	
@@ -72,8 +59,7 @@ int main(int argc, char * argv[])
     fork_child(special, 1, args);
     usleep(WAIT_TIME);
 
-    args[1] = argv[2];
-    fork_child(protector, 2, args);
+    fork_child(protector, 1, args);
 
 
     count = 0;

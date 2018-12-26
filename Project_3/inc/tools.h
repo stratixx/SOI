@@ -16,10 +16,10 @@
 #define PRODUCER_SLEEP_TIME     3
 #define SPECIAL_SLEEP_TIME      3
 #define PROSUMER_SLEEP_TIME     (500*1000)
-#define PROTECTOR_SLEEP_TIME    (500*1000)
+#define PROTECTOR_SLEEP_TIME    (1000*1000)
 
 #define QUEUE_NUMBER            3
-#define QUEUE_SIZE              16
+#define QUEUE_SIZE              20
 #define QUEUE_NO_MSG            QUEUE_SIZE
 #define KEY_OFFSET              8200
 

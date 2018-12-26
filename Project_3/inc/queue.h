@@ -36,6 +36,13 @@ class Queue
 	int tail;                       /* indeks ostatniego elementu listy */        
 	int count;                      /* ilość elementów w liście */
     int valid;                      /* czy lista jest ważna? */
+    int full_id;
+	int empty_id;
+	int mutex_id;
+
+    char queue_name;
+
+    static char last_queue;
 
 
     /*
