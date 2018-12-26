@@ -7,28 +7,26 @@
 
 
 
-void sem_down(int semid, int semnum)
+void sem_down(int semid, int semnum, struct sembuf * buf)
 {
-    struct sembuf buf;
-    buf.sem_num = semnum;
-    buf.sem_op = -1;
-    buf.sem_flg = 0;
-    if (semop(semid, &buf, 1) == -1)
+    buf->sem_num = semnum;
+    buf->sem_op = -1;
+    buf->sem_flg = 0;
+    if (semop(semid, buf, 1) == -1)
     {
         perror("sem_down: EXIT ERROR -1");
         exit(-1);
     }
 }
 
-void sem_up(int semid, int semnum)
+void sem_up(int semid, int semnum, struct sembuf * buf)
 {
-    struct sembuf buf;
-    buf.sem_num = semnum;
-    buf.sem_op = 1;
-    buf.sem_flg = 0;
-    if (semop(semid, &buf, 1) == -1)
+    buf->sem_num = semnum;
+    buf->sem_op = 1;
+    buf->sem_flg = 0;
+    if (semop(semid, buf, 1) == -1)
     {
-        perror("sem_UP: EXIT ERROR -1");
+        perror("sem_up: EXIT ERROR -1");
         exit(-1);
     }
 }

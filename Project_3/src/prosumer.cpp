@@ -10,7 +10,7 @@
 
 
 extern Queue queue[QUEUE_NUMBER];
-
+extern int test;
 
 int prosumer(int argc, char* argv[])
 {    
@@ -20,6 +20,7 @@ int prosumer(int argc, char* argv[])
     float pr;
     int tmp, readed;
     int instant_read = 0;
+	struct sembuf buf;
 
     sprintf(msg.producer, "_Prosumer_%s_", argv[1] );  
     sscanf(argv[2], "%f", &pr);    
@@ -36,9 +37,11 @@ int prosumer(int argc, char* argv[])
     rand_init();
 		
 	while(1)
-	{	        
+	{	    
+        printf("prosumer test: %d;\n\r", test);    
 		/* receive message */
-        my_queue->read_msg(&rec_msg);
+        if(my_queue->read_msg(&rec_msg, &buf)==0) continue;
+        
 		SUBPROCESSES_PRINT_CMD(printf("%s received msg from %s: \"%3s\"; %d/%d\n", msg.producer, rec_msg.producer, rec_msg.data, my_queue->count, QUEUE_SIZE);)
 		
         /* wait */
@@ -75,7 +78,7 @@ int prosumer(int argc, char* argv[])
         }
 
         /* send message to selected queue */
-		queue[readed].send_msg(&msg);
+		queue[readed].send_msg(&msg, &buf);
 		SUBPROCESSES_PRINT_CMD(printf("%s send to queue \"%c\" msg: \"%3s\"; %d/%d\n", msg.producer, readed+'A', msg.data, queue[readed].count, QUEUE_SIZE);)
 
 	}	

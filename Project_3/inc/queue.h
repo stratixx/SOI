@@ -58,12 +58,12 @@ class Queue
     /*
     *
     */
-    int send_msg(Message_t *msg);
+    int send_msg(Message_t *msg, struct sembuf * buf);
 
     /*
     *
     */
-    Message_t* read_msg(Message_t *msg);
+    Message_t* read_msg(Message_t *msg, struct sembuf * buf);
 };
 /* ------------------------------------------------------------------------*/
 

@@ -16,7 +16,7 @@
 
 
 Queue queue[QUEUE_NUMBER];
-
+int test;
 
 int main(int argc, char * argv[])
 {
@@ -38,17 +38,17 @@ int main(int argc, char * argv[])
 
     args[1] = "A";
     fork_child(prosumer, 3, args);
-    usleep(WAIT_TIME);
+    usleep(WAIT_TIME);/*
     args[1] = "B";
     fork_child(prosumer, 3, args);
     usleep(WAIT_TIME);
     args[1] = "C";
     fork_child(prosumer, 3, args);
     usleep(WAIT_TIME);
-
+*/
     args[1] = "A";
     fork_child(producer, 2, args);
-    usleep(WAIT_TIME);
+    usleep(WAIT_TIME);/*
     args[1] = "B";
     fork_child(producer, 2, args);
     usleep(WAIT_TIME);
@@ -60,7 +60,7 @@ int main(int argc, char * argv[])
     usleep(WAIT_TIME);
 
     fork_child(protector, 1, args);
-
+*/
 
     count = 0;
     while( count <= (5*60*1000/250))
@@ -68,6 +68,7 @@ int main(int argc, char * argv[])
         MAIN_PRINT_CMD(for(tmp=0; tmp<QUEUE_NUMBER; tmp++) printf("%c: %d | ", tmp+'A', queue[tmp].count);)
         MAIN_PRINT_CMD(printf("time: %.2fs\n", (float)(count*250.0/1000));)
         
+        printf("main test: %d;\n\r", test);    
         usleep(1000*250);
         count++;
     }

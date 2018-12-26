@@ -16,6 +16,7 @@ int special(int argc, char* argv[])
 {    
     Message_t msg;
     int tmp, readed;
+	struct sembuf buf;
 
     sprintf(msg.producer, "_Special_" );  
     
@@ -36,7 +37,7 @@ int special(int argc, char* argv[])
         tmp = rand_value('A', 'C')-'A';
 
         /* send message to selected queue */
-		queue[tmp].send_msg(&msg);
+		queue[tmp].send_msg(&msg, &buf);
 		SUBPROCESSES_PRINT_CMD(printf("%s send to queue \"%c\" msg: \"%3s\"; %d/%d\n", msg.producer, tmp+'A', msg.data, queue[tmp].count, QUEUE_SIZE);)
 
         /* wait */

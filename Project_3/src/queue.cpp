@@ -21,6 +21,8 @@ Queue::Queue()
     this->mutex_id = semget(SEM_MUTEX_KEY(this->queue_name), 1, IPC_CREAT|IPC_EXCL|0600);
     semctl(this->mutex_id, 0, SETVAL, (int)1);
 
+    printf("Queue_constructor: addr: %d; name: %c; full: %d; empty: %d; mutex: %d;\n\r", this, this->queue_name, this->full_id, this->empty_id, this->mutex_id);
+
 	this->head = 0;
 	this->tail = 0;
 	this->count = 0;	
@@ -38,16 +40,19 @@ void Queue::copy_msg(Message_t *dest, const Message_t *src)
     dest->valid = src->valid;  
 }
 
-int Queue::send_msg(Message_t *msg)
+int Queue::send_msg(Message_t *msg, struct sembuf * buf)
 {
+    printf("send_msg \"%c\": %d\n\r", this->queue_name, this);
     int tmp, msg_index;
 
-    sem_down(this->empty_id, 0);
-	sem_down(this->mutex_id, 0);
+    printf("send_msg %c: sem_down empty\n\r", this->queue_name);
+    sem_down(this->empty_id, 0, buf);
+    printf("send_msg %c: sem_down mutex\n\r", this->queue_name);
+	sem_down(this->mutex_id, 0, buf);
 
     if(this->count>=QUEUE_SIZE)
     {
-        printf("send_msg: queue is full!");
+        printf("send_msg %c: queue is full!", this->queue_name);
         exit(-4);
     }
 
@@ -73,7 +78,12 @@ int Queue::send_msg(Message_t *msg)
         this->head = msg_index;
 
         this->count++;
-        return this->count;
+        printf("send_msg %c: first message %d\n\r", this->queue_name, this->count);
+        printf("send_msg: sem_up mutex\n\r");
+        sem_up(this->mutex_id, 0, buf);
+        printf("send_msg: sem_up full\n\r");
+        sem_up(this->full_id, 0, buf);	
+        return 1;
     }
 
     
@@ -130,30 +140,44 @@ int Queue::send_msg(Message_t *msg)
     }
 	this->count++;
 
-	sem_up(this->mutex_id, 0);
-	sem_up(this->full_id, 0);	
+    printf("send_msg %c: sem_up mutex\n\r", this->queue_name);
+	sem_up(this->mutex_id, 0, buf);
+    printf("send_msg %c: sem_up full\n\r", this->queue_name);
+	sem_up(this->full_id, 0, buf);	
 
     return this->count;
 }
 
-Message_t* Queue::read_msg(Message_t *msg)
-{			
-    sem_down(this->full_id, 0);
-	sem_down(this->mutex_id, 0);
+Message_t* Queue::read_msg(Message_t *msg, struct sembuf * buf)
+{	
+    printf("read_msg \"%c\": %d\n\r", this->queue_name, this);
+    int tmp;	
+    printf("read_msg %c: sem_down full\n\r", this->queue_name);	
+    sem_down(this->full_id, 0, buf);
+    printf("read_msg %c: sem_down mutex\n\r", this->queue_name);	
+	sem_down(this->mutex_id, 0, buf);
 
+    printf("read_msg %c: count: %d;\n\r", this->queue_name, this->count);
     if(this->count<=0)
     {
-        printf("read_msg: no messages in queue!");
-        exit(-3);
+        printf("read_msg %c: no messages in queue!\n\r", this->queue_name);
+        printf("read_msg: sem_up mutex\n\r");	
+        sem_up(this->mutex_id, 0, buf);
+        printf("read_msg: sem_up empty\n\r");	
+        sem_up(this->empty_id, 0, buf);	
+        return 0;
+        //exit(-3);
     }
     copy_msg(msg, &this->table[this->head]);
     this->table[this->head].valid = 0;
 	//m = this->table[this->head];
     this->head = this->table[this->head].next;
-	this->count--;
+	--this->count;
 	
-	sem_up(this->mutex_id, 0);
-	sem_up(this->empty_id, 0);	
+    printf("read_msg %c: sem_up mutex\n\r", this->queue_name);	
+	sem_up(this->mutex_id, 0, buf);
+    printf("read_msg %c: sem_up empty\n\r", this->queue_name);	
+	sem_up(this->empty_id, 0, buf);	
 
 	return msg;
 }

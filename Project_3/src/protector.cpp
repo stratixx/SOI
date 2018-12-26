@@ -18,6 +18,7 @@ int protector(int argc, char* argv[])
     Message_t msg;
     int tmp, readed;
     Queue * my_queue;
+	struct sembuf buf;
 
     sprintf(msg.producer, "_Protector_" );  
     
@@ -42,7 +43,7 @@ int protector(int argc, char* argv[])
                 my_queue = &queue[n];        
 
         /* send message to selected queue */
-		my_queue->send_msg(&msg);
+		my_queue->send_msg(&msg, &buf);
 		SUBPROCESSES_PRINT_CMD(printf("%s send to queue \"%c\" msg: \"%3s\"; %d/%d\n", msg.producer, tmp+'A', msg.data, my_queue->count, QUEUE_SIZE);)
 
         /* wait */
