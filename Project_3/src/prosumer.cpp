@@ -9,16 +9,16 @@
 #include "../inc/queue.h"
 
 
-extern Queue queue[QUEUE_NUMBER];
-
 
 int prosumer(int argc, char* argv[])
 {    
+    Queue * queue[QUEUE_NUMBER];
+    int tmp, count, queue_id[QUEUE_NUMBER];
     char queue_name;
     Queue * my_queue;
     Message_t msg, rec_msg;
     float pr;
-    int tmp, readed;
+    int  readed;
     int instant_read = 0;
 
     sprintf(msg.producer, "_Prosumer_%s_", argv[1] );  
@@ -26,8 +26,13 @@ int prosumer(int argc, char* argv[])
     queue_name = *argv[1];  
     SUBPROCESSES_PRINT_CMD(printf("%s start with pr=%1.3f\n", msg.producer, pr);)
     
+    for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
+    {
+        queue_id[tmp] = shmget(QUEUE_KEY(tmp+'A'), sizeof(Queue), 0666);
+        queue[tmp] = (Queue*)shmat(queue_id[tmp], NULL, 0);
+    }
 
-	my_queue = &queue[queue_name-'A'];
+	my_queue = queue[queue_name-'A'];
 
 
     msg.priority = 0;
@@ -75,8 +80,8 @@ int prosumer(int argc, char* argv[])
         }
 
         /* send message to selected queue */
-		queue[readed].send_msg(&msg);
-		SUBPROCESSES_PRINT_CMD(printf("%s send to queue \"%c\" msg: \"%3s\"; %d/%d\n", msg.producer, readed+'A', msg.data, queue[readed].count, QUEUE_SIZE);)
+		queue[readed]->send_msg(&msg);
+		SUBPROCESSES_PRINT_CMD(printf("%s send to queue \"%c\" msg: \"%3s\"; %d/%d\n", msg.producer, readed+'A', msg.data, queue[readed]->count, QUEUE_SIZE);)
 
 	}	
 

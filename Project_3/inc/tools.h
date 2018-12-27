@@ -25,12 +25,15 @@
 
 #define MESSAGE_PRODUCER_LENGTH 15
 
+#define QUEUE_KEY(queue)        (KEY_OFFSET+queue-'A')
+
 #define SEM_FULL_KEY(queue)     (KEY_OFFSET+10+queue-'A')
 #define SEM_EMPTY_KEY(queue)    (KEY_OFFSET+20+queue-'A')
 #define SEM_MUTEX_KEY(queue)    (KEY_OFFSET+30+queue-'A')
 
-#define SUBPROCESSES_PRINT_ENABLE
-//#define MAIN_PRINT_ENABLE
+
+//#define SUBPROCESSES_PRINT_ENABLE
+#define MAIN_PRINT_ENABLE
 
 #ifdef SUBPROCESSES_PRINT_ENABLE
     #define SUBPROCESSES_PRINT_CMD(arg) arg

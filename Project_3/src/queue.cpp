@@ -8,11 +8,12 @@
 
 char Queue::last_queue = 'A'-1;
 
-Queue::Queue()
+Queue::Queue(char queue_name)
 {
     int n;
     Queue::last_queue++;
-    this->queue_name = Queue::last_queue;
+    this->queue_name = queue_name;
+    printf("queue constructor: %c\n\r", this->queue_name);
 
     this->full_id = semget(SEM_FULL_KEY(this->queue_name), 1, IPC_CREAT|IPC_EXCL|0600);	
     semctl(this->full_id, 0, SETVAL, (int)0);        
@@ -71,13 +72,8 @@ int Queue::send_msg(Message_t *msg)
         /* first message in queue */
         this->tail = msg_index;
         this->head = msg_index;
-
-        this->count++;
-        return this->count;
     }
-
-    
-	if(msg->priority == 2) /* priority equals 2 */
+    else if(msg->priority == 2) /* priority equals 2 */
     {
         if( this->table[this->head].priority < 2 ) /* if head has lower priority than 2 */
         {

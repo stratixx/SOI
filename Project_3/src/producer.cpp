@@ -10,19 +10,25 @@
 #include "../inc/tools.h"
 #include "../inc/queue.h"
 
-extern Queue queue[QUEUE_NUMBER];
 
 int producer(int argc, char* argv[])
 {
+    Queue * queue[QUEUE_NUMBER];
+    int tmp, count, queue_id[QUEUE_NUMBER];
     char queue_name;
     Message_t msg;
-	int tmp;
 
     sprintf(msg.producer, "_Producer_%s_", argv[1] );  
     queue_name = *argv[1];  
     SUBPROCESSES_PRINT_CMD(printf("%s start\n", msg.producer);)
     
-	Queue *my_queue = &queue[queue_name-'A'];
+    for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
+    {
+        queue_id[tmp] = shmget(QUEUE_KEY(tmp+'A'), sizeof(Queue), 0666);
+        queue[tmp] = (Queue*)shmat(queue_id[tmp], NULL, 0);
+    }
+
+	Queue *my_queue = queue[queue_name-'A'];
 
     msg.priority = 0;
     msg.valid = 1;

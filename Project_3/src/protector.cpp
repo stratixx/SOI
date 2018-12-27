@@ -8,21 +8,28 @@
 #include "../inc/tools.h"
 #include "../inc/queue.h"
 
-    
-extern Queue queue[QUEUE_NUMBER];
+
 
 
 int protector(int argc, char* argv[])
 {    
+    Queue * queue[QUEUE_NUMBER];
+    int tmp, count, queue_id[QUEUE_NUMBER];
     // dostaje jako argument częstotliwosć akcji
     Message_t msg;
-    int tmp, readed;
+    int readed;
     Queue * my_queue;
 
     sprintf(msg.producer, "_Protector_" );  
     
     SUBPROCESSES_PRINT_CMD(printf("%s start\n", msg.producer);)
     
+    for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
+    {
+        queue_id[tmp] = shmget(QUEUE_KEY(tmp+'A'), sizeof(Queue), 0666);
+        queue[tmp] = (Queue*)shmat(queue_id[tmp], NULL, 0);
+    }
+
     msg.priority = 2;
     msg.valid = 1;
 
@@ -35,11 +42,11 @@ int protector(int argc, char* argv[])
         msg.data[2] = 0;
         
         tmp = 0;
-        my_queue = &queue[0];
+        my_queue = queue[0];
         /* select queue */
         for( int n=0; n<QUEUE_NUMBER; n++ )   
-            if(queue[n].count > my_queue->count)
-                my_queue = &queue[n];        
+            if(queue[n]->count > my_queue->count)
+                my_queue = queue[n];        
 
         /* send message to selected queue */
 		my_queue->send_msg(&msg);

@@ -48,7 +48,7 @@ class Queue
     /*
     *
     */
-    Queue();
+    Queue(char queue_name);
 
     /*
     *

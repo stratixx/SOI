@@ -13,14 +13,22 @@ extern Queue queue[QUEUE_NUMBER];
 
 
 int special(int argc, char* argv[])
-{    
+{   
+    Queue * queue[QUEUE_NUMBER];
+    int tmp, count, queue_id[QUEUE_NUMBER]; 
     Message_t msg;
-    int tmp, readed;
+    int readed;
 
     sprintf(msg.producer, "_Special_" );  
     
     SUBPROCESSES_PRINT_CMD(printf("%s start\n", msg.producer);)
     
+    for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
+    {
+        queue_id[tmp] = shmget(QUEUE_KEY(tmp+'A'), sizeof(Queue), 0666);
+        queue[tmp] = (Queue*)shmat(queue_id[tmp], NULL, 0);
+    }
+
     msg.priority = 1;
     msg.valid = 1;
 
@@ -36,8 +44,8 @@ int special(int argc, char* argv[])
         tmp = rand_value('A', 'C')-'A';
 
         /* send message to selected queue */
-		queue[tmp].send_msg(&msg);
-		SUBPROCESSES_PRINT_CMD(printf("%s send to queue \"%c\" msg: \"%3s\"; %d/%d\n", msg.producer, tmp+'A', msg.data, queue[tmp].count, QUEUE_SIZE);)
+		queue[tmp]->send_msg(&msg);
+		SUBPROCESSES_PRINT_CMD(printf("%s send to queue \"%c\" msg: \"%3s\"; %d/%d\n", msg.producer, tmp+'A', msg.data, queue[tmp]->count, QUEUE_SIZE);)
 
         /* wait */
         sleep(SPECIAL_SLEEP_TIME);

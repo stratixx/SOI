@@ -15,12 +15,10 @@
 #include "../inc/protector.h"
 
 
-Queue queue[QUEUE_NUMBER];
-
-
 int main(int argc, char * argv[])
 {
-    int tmp, count;
+    Queue * queue[QUEUE_NUMBER];
+    int tmp, count, queue_id[QUEUE_NUMBER];
 
     char * args[3];
 
@@ -32,6 +30,13 @@ int main(int argc, char * argv[])
 		return -2;
 	}
 	
+    for(tmp=0; tmp<QUEUE_NUMBER; tmp++)
+    {
+        queue_id[tmp] = shmget(QUEUE_KEY(tmp+'A'), sizeof(Queue), IPC_CREAT|0666);
+        queue[tmp] = (Queue*)shmat(queue_id[tmp], NULL, 0);
+        *queue[tmp] = Queue(tmp+'A');
+    }
+
     args[0] = argv[0];
     args[2] = argv[1];
     #define WAIT_TIME 300
@@ -65,7 +70,7 @@ int main(int argc, char * argv[])
     count = 0;
     while( count <= (5*60*1000/250))
     {
-        MAIN_PRINT_CMD(for(tmp=0; tmp<QUEUE_NUMBER; tmp++) printf("%c: %d | ", tmp+'A', queue[tmp].count);)
+        MAIN_PRINT_CMD(for(tmp=0; tmp<QUEUE_NUMBER; tmp++) printf("%c: %d | ", tmp+'A', queue[tmp]->count);)
         MAIN_PRINT_CMD(printf("time: %.2fs\n", (float)(count*250.0/1000));)
         
         usleep(1000*250);
