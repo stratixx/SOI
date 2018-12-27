@@ -12,22 +12,22 @@ Queue::Queue(char queue_name)
 {
     int n;
     Queue::last_queue++;
-    this->queue_name = queue_name;
-    printf("queue constructor: %c\n\r", this->queue_name);
+    queue_name = queue_name;
+    //printf("queue constructor: %c\n\r", queue_name);
 
-    this->full_id = semget(SEM_FULL_KEY(this->queue_name), 1, IPC_CREAT|IPC_EXCL|0600);	
-    semctl(this->full_id, 0, SETVAL, (int)0);        
-    this->empty_id = semget(SEM_EMPTY_KEY(this->queue_name), 1, IPC_CREAT|IPC_EXCL|0600);
-    semctl(this->empty_id, 0, SETVAL, QUEUE_SIZE);          
-    this->mutex_id = semget(SEM_MUTEX_KEY(this->queue_name), 1, IPC_CREAT|IPC_EXCL|0600);
-    semctl(this->mutex_id, 0, SETVAL, (int)1);
+    full_id = semget(SEM_FULL_KEY(queue_name), 1, IPC_CREAT|IPC_EXCL|0600);	
+    semctl(full_id, 0, SETVAL, (int)0);        
+    empty_id = semget(SEM_EMPTY_KEY(queue_name), 1, IPC_CREAT|IPC_EXCL|0600);
+    semctl(empty_id, 0, SETVAL, QUEUE_SIZE);          
+    mutex_id = semget(SEM_MUTEX_KEY(queue_name), 1, IPC_CREAT|IPC_EXCL|0600);
+    semctl(mutex_id, 0, SETVAL, (int)1);
 
-	this->head = 0;
-	this->tail = 0;
-	this->count = 0;	
+	head = 0;
+	tail = 0;
+	count = 0;	
     for(n=0; n<QUEUE_SIZE; n++)
-        this->table[n].valid = 0;
-    this->valid = 1;
+        table[n].valid = 0;
+    valid = 1;
 }
 
 void Queue::copy_msg(Message_t *dest, const Message_t *src)
@@ -43,17 +43,17 @@ int Queue::send_msg(Message_t *msg)
 {
     int tmp, msg_index;
 
-    sem_down(this->empty_id, 0);
-	sem_down(this->mutex_id, 0);
+    wait(empty_id);
+	enter();
 
-    if(this->count>=QUEUE_SIZE)
+    if(count>=QUEUE_SIZE)
     {
         printf("send_msg: queue is full!");
         exit(-4);
     }
 
     for(msg_index=0; msg_index<=QUEUE_SIZE; msg_index++)
-        if( this->table[msg_index].valid==0 )
+        if( table[msg_index].valid==0 )
             break;
 
     
@@ -63,93 +63,114 @@ int Queue::send_msg(Message_t *msg)
         exit(-5);
     }
 
-    copy_msg(&this->table[msg_index], msg);
-    this->table[msg_index].valid = 1;
-    this->table[msg_index].next = QUEUE_NO_MSG;
+    copy_msg(&table[msg_index], msg);
+    table[msg_index].valid = 1;
+    table[msg_index].next = QUEUE_NO_MSG;
     
-    if(this->count==0)
+    if(count==0)
     {
         /* first message in queue */
-        this->tail = msg_index;
-        this->head = msg_index;
+        tail = msg_index;
+        head = msg_index;
     }
     else if(msg->priority == 2) /* priority equals 2 */
     {
-        if( this->table[this->head].priority < 2 ) /* if head has lower priority than 2 */
+        if( table[head].priority < 2 ) /* if head has lower priority than 2 */
         {
             /* insert priority message as head */
-            this->table[msg_index].next = this->head;
-            this->head = msg_index;
+            table[msg_index].next = head;
+            head = msg_index;
         }
         else
         {
-            tmp = this->head;
+            tmp = head;
             /* tmp element is tail or next element is first lower priority message in queue */
-            while( tmp!=this->tail && this->table[this->table[tmp].next].priority>=2 )
-                tmp = this->table[tmp].next;
-            if(tmp==this->tail)
-                this->tail = msg_index;
-            this->table[msg_index].next = this->table[tmp].next;
-            this->table[tmp].next = msg_index;
+            while( tmp!=tail && table[table[tmp].next].priority>=2 )
+                tmp = table[tmp].next;
+            if(tmp==tail)
+                tail = msg_index;
+            table[msg_index].next = table[tmp].next;
+            table[tmp].next = msg_index;
         }
     }
 	else if(msg->priority == 1) /* priority equals 1 */
 	{
-        if( this->table[this->head].priority<1 ) /* if head has zero priority */
+        if( table[head].priority<1 ) /* if head has zero priority */
         {
             /* insert priority message as head */
-            this->table[msg_index].next = this->head;
-            this->head = msg_index;
+            table[msg_index].next = head;
+            head = msg_index;
         }
         else
         {
-            tmp = this->head;
+            tmp = head;
             /* tmp element is tail or next element is first non-priority message in queue */
-            while( tmp!=this->tail && this->table[this->table[tmp].next].priority>=1 )
-                tmp = this->table[tmp].next;
-            if(tmp==this->tail)
-                this->tail = msg_index;
-            this->table[msg_index].next = this->table[tmp].next;
-            this->table[tmp].next = msg_index;
+            while( tmp!=tail && table[table[tmp].next].priority>=1 )
+                tmp = table[tmp].next;
+            if(tmp==tail)
+                tail = msg_index;
+            table[msg_index].next = table[tmp].next;
+            table[tmp].next = msg_index;
         }
 	}
 	else if(msg->priority == 0) /* priority equals 0 */
 	{
         /* insert message at end of queue */
-        this->table[this->tail].next = msg_index;
-        this->tail = msg_index;
+        table[tail].next = msg_index;
+        tail = msg_index;
 	}
 	else /* unsuported priority */
     {
         printf("send_msg: unsuported priority!");
         exit(-6);
     }
-	this->count++;
+	count++;
 
-	sem_up(this->mutex_id, 0);
-	sem_up(this->full_id, 0);	
+	leave();
+	signal(full_id);	
 
-    return this->count;
+    return count;
 }
 
 Message_t* Queue::read_msg(Message_t *msg)
 {			
-    sem_down(this->full_id, 0);
-	sem_down(this->mutex_id, 0);
+    wait(full_id);
+	enter();
 
-    if(this->count<=0)
+    if(count<=0)
     {
         printf("read_msg: no messages in queue!");
         exit(-3);
     }
-    copy_msg(msg, &this->table[this->head]);
-    this->table[this->head].valid = 0;
-	//m = this->table[this->head];
-    this->head = this->table[this->head].next;
-	this->count--;
+    copy_msg(msg, &table[head]);
+    table[head].valid = 0;
+	//m = table[head];
+    head = table[head].next;
+	count--;
 	
-	sem_up(this->mutex_id, 0);
-	sem_up(this->empty_id, 0);	
+	leave();
+	signal(empty_id);	
 
 	return msg;
+}
+
+
+void Queue::enter()
+{
+	sem_down(mutex_id, 0);
+}
+
+void Queue::leave()
+{
+	sem_up(mutex_id, 0);
+}
+
+void Queue::wait( int id )
+{
+    sem_down(id, 0);
+}
+
+void Queue::signal( int id )
+{
+	sem_up(id, 0);
 }

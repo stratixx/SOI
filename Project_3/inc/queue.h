@@ -64,6 +64,11 @@ class Queue
     *
     */
     Message_t* read_msg(Message_t *msg);
+
+    void enter();
+    void leave();
+    void wait(int id);
+    void signal( int id);
 };
 /* ------------------------------------------------------------------------*/
 
