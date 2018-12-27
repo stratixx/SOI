@@ -23,11 +23,8 @@ o = obj
 ###################################################################
 
 # kompilacja wszystkich zaleznosci do pliku wykonywalnego
-all: main tools queue producer prosumer special protector
-	$(CC) $o/main.o $o/tools.o $o/queue.o $o/producer.o $o/prosumer.o $o/special.o $o/protector.o -o $b/project3.bin
-	#$(CC) $o/producer.o $o/tools.o -o $b/producer.bin
-	#$(CC) $o/prosumer.o $o/tools.o -o $b/prosumer.bin
-	#$(CC) $o/special.o  $o/tools.o -o $b/special.bin
+all: main tools monitor queue producer prosumer special protector
+	$(CC) $o/main.o $o/tools.o $o/monitor.o $o/queue.o $o/producer.o $o/prosumer.o $o/special.o $o/protector.o -o $b/project3.bin
 
 # wyczyszczenie projektu
 clean: 
@@ -62,5 +59,9 @@ $(object6): $s/$(object6).cpp
 object7 = queue
 $(object7): $s/$(object7).cpp
 	$(CC) $s/$(object7).cpp  -c -o $o/$(object7).o
+
+object8 = monitor
+$(object8): $s/$(object8).cpp
+	$(CC) $s/$(object8).cpp  -c -o $o/$(object8).o
 
 

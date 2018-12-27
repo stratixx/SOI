@@ -8,6 +8,7 @@
 */
 
 #include "tools.h"
+#include "monitor.h"
 
 /* ----------------------------------------------------------- */
 
@@ -28,7 +29,7 @@ typedef struct
 /*
 *
 */
-class Queue
+class Queue : public Monitor
 {
   public:
 	Message_t table[QUEUE_SIZE];    /* tablica wiadomości */
@@ -36,9 +37,6 @@ class Queue
 	int tail;                       /* indeks ostatniego elementu listy */        
 	int count;                      /* ilość elementów w liście */
     int valid;                      /* czy lista jest ważna? */
-    int full_id;
-	int empty_id;
-	int mutex_id;
 
     char queue_name;
 
@@ -64,11 +62,6 @@ class Queue
     *
     */
     Message_t* read_msg(Message_t *msg);
-
-    void enter();
-    void leave();
-    void wait(int id);
-    void signal( int id);
 };
 /* ------------------------------------------------------------------------*/
 

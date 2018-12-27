@@ -8,19 +8,14 @@
 
 char Queue::last_queue = 'A'-1;
 
-Queue::Queue(char queue_name)
+Queue::Queue(char queue_name) : Monitor(queue_name)
 {
+    
     int n;
     Queue::last_queue++;
     queue_name = queue_name;
-    //printf("queue constructor: %c\n\r", queue_name);
+    printf("queue constructor: %c\n\r", queue_name);
 
-    full_id = semget(SEM_FULL_KEY(queue_name), 1, IPC_CREAT|IPC_EXCL|0600);	
-    semctl(full_id, 0, SETVAL, (int)0);        
-    empty_id = semget(SEM_EMPTY_KEY(queue_name), 1, IPC_CREAT|IPC_EXCL|0600);
-    semctl(empty_id, 0, SETVAL, QUEUE_SIZE);          
-    mutex_id = semget(SEM_MUTEX_KEY(queue_name), 1, IPC_CREAT|IPC_EXCL|0600);
-    semctl(mutex_id, 0, SETVAL, (int)1);
 
 	head = 0;
 	tail = 0;
@@ -43,7 +38,7 @@ int Queue::send_msg(Message_t *msg)
 {
     int tmp, msg_index;
 
-    wait(empty_id);
+    wait_full();
 	enter();
 
     if(count>=QUEUE_SIZE)
@@ -127,14 +122,14 @@ int Queue::send_msg(Message_t *msg)
 	count++;
 
 	leave();
-	signal(full_id);	
+	signal_empty();	
 
     return count;
 }
 
 Message_t* Queue::read_msg(Message_t *msg)
 {			
-    wait(full_id);
+    wait_empty();
 	enter();
 
     if(count<=0)
@@ -149,28 +144,8 @@ Message_t* Queue::read_msg(Message_t *msg)
 	count--;
 	
 	leave();
-	signal(empty_id);	
+	signal_full();	
 
 	return msg;
 }
 
-
-void Queue::enter()
-{
-	sem_down(mutex_id, 0);
-}
-
-void Queue::leave()
-{
-	sem_up(mutex_id, 0);
-}
-
-void Queue::wait( int id )
-{
-    sem_down(id, 0);
-}
-
-void Queue::signal( int id )
-{
-	sem_up(id, 0);
-}
