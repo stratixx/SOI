@@ -24,7 +24,7 @@ int main( void )
         {
                 l = *p++;
                 a = *p++; /* tu niewykorzystywane */
-                printf( "%d\t", l );
+                printf( "%d ", l );
         }
         printf( "\n" );
         return 0;

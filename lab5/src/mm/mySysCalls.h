@@ -2,7 +2,6 @@
 #define MySysCalls_H
 
 
-
 /* #SOI #lab5 MySysCalls */
 int do_hole_map()
 {
@@ -22,12 +21,13 @@ int do_hole_map()
     }
 
     mmBuff[mmBuffCount] = 0;
-
+    
     /* from MM process copy Data segment to calling process */
     /* mm_in.m1_p1 contains pointer to user data buffer */
+    /* illegal convert to long */
 	sys_copy(MM_PROC_NR, D, mmBuff,
 			mm_in.m_source, D, (phys_bytes) mm_in.m1_p1,
-			(phys_bytes) mmBuffCount);
+			(phys_bytes) sizeof(unsigned int)*mmBuffCount);
 
   return 0;
 }
