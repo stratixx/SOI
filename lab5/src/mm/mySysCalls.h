@@ -7,23 +7,18 @@
 int do_hole_map()
 {
     unsigned int buffSize = mm_in.m1_i1; /* size of user buffer */
-    struct hole* hPoint = hole_head;
+    struct hole* hp = hole_head;
     unsigned int mmBuff[2*NR_HOLES + 1]; /* buffer which contain information about holes */
     unsigned int mmBuffCount = 0;
 
-    while( hPoint != NIL_HOLE )
-    {
-        
-        if( hPoint->h_base >= swap_base )
-            break;
-        
+      while(hp != NIL_HOLE && hp->h_base < swap_base)
+    {        
         if( (buffSize-mmBuffCount) < 3 )
             break;
-        mmBuff[mmBuffCount++] = hPoint->h_len;
-        mmBuff[mmBuffCount++] = hPoint->h_base;
+        mmBuff[mmBuffCount++] = hp->h_len;
+        mmBuff[mmBuffCount++] = hp->h_base;
 
-
-        hPoint = hPoint->h_next;
+        hp = hp->h_next;
     }
 
     mmBuff[mmBuffCount] = 0;

@@ -60,13 +60,40 @@ phys_clicks clicks;		/* amount of memory requested */
  * needed for FORK or EXEC.  Swap other processes out if needed.
  */
 
-  register struct hole *hp, *prev_ptr;
+  register struct hole *hp, *prev_ptr, *bhp, *prev_bhp; /* bhp --> biggest hole pointer */
   phys_clicks old_base;
-  enableWorstFit = 0; /* tmp */
+  /*enableWorstFit = 0;*/ /* tmp */
 
   if( enableWorstFit==1 )
   {
-
+    do
+    {
+      hp = hole_head;
+      prev_ptr = NIL_HOLE;
+      bhp = hp;
+      prev_bhp = NIL_HOLE;
+      /* try to find biggest hole */      
+      while(hp != NIL_HOLE && hp->h_base < swap_base)
+      {
+        if( hp->h_len > bhp->h_len )
+        {
+          prev_bhp = prev_ptr;
+          bhp = hp;
+        }
+        prev_ptr = hp;
+        hp = hp->h_next;
+      }
+      /* bhp contains pointer to biggest hole */
+      if( bhp != NIL_HOLE && bhp->h_len >= clicks )
+      {
+        old_base = bhp->h_base;
+        bhp->h_base += clicks;
+        bhp->h_len  -= clicks;
+        if( bhp->h_len == 0 )
+          del_slot(prev_bhp, bhp);
+        return(old_base);
+      }
+    }while(swap_out());
   }
   else
   {
