@@ -37,6 +37,9 @@ _PROTOTYPE( int do_getset, (void)					);
 
 /* main.c */
 _PROTOTYPE( void main, (void)						);
+_PROTOTYPE( void do_hole_map, (void)				);
+_PROTOTYPE( void do_worst_fit, (void)				);
+
 
 /* misc.c */
 _PROTOTYPE( int do_reboot, (void)					);

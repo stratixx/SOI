@@ -7,7 +7,9 @@
 
 PUBLIC int worst_fit( int w )
 {
-	/* ... _syscall(..WORST_FIT..) ... */
+	message msg;
+	msg.m1_i1 = w;
+	return _syscall(MM, WORST_FIT, &msg);
 }
 
 int main( int argc, char *argv[] )
