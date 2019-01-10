@@ -38,10 +38,14 @@ PRIVATE phys_clicks swap_base;	/* memory offset chosen as swap base */
 PRIVATE phys_clicks swap_maxsize;/* maximum amount of swap "memory" possible */
 PRIVATE struct mproc *in_queue;	/* queue of processes wanting to swap in */
 PRIVATE struct mproc *outswap = &mproc[LOW_USER];  /* outswap candidate? */
+/* SOI lab5 */
+PRIVATE int enableWorstFit = 0; /* flag to select between FirstFit and WorstFit */
 
 FORWARD _PROTOTYPE( void del_slot, (struct hole *prev_ptr, struct hole *hp) );
 FORWARD _PROTOTYPE( void merge, (struct hole *hp)			    );
 FORWARD _PROTOTYPE( int swap_out, (void)				    );
+
+#include "mySysCalls.h"
 
 /*===========================================================================*
  *				alloc_mem				     *
@@ -58,27 +62,35 @@ phys_clicks clicks;		/* amount of memory requested */
 
   register struct hole *hp, *prev_ptr;
   phys_clicks old_base;
+  enableWorstFit = 0; /* tmp */
 
-  do {
-	hp = hole_head;
-	while (hp != NIL_HOLE && hp->h_base < swap_base) {
-		if (hp->h_len >= clicks) {
-			/* We found a hole that is big enough.  Use it. */
-			old_base = hp->h_base;	/* remember where it started */
-			hp->h_base += clicks;	/* bite a piece off */
-			hp->h_len -= clicks;	/* ditto */
+  if( enableWorstFit==1 )
+  {
 
-			/* Delete the hole if used up completely. */
-			if (hp->h_len == 0) del_slot(prev_ptr, hp);
+  }
+  else
+  {
+    do {
+    hp = hole_head;
+    while (hp != NIL_HOLE && hp->h_base < swap_base) {
+      if (hp->h_len >= clicks) {
+        /* We found a hole that is big enough.  Use it. */
+        old_base = hp->h_base;	/* remember where it started */
+        hp->h_base += clicks;	/* bite a piece off */
+        hp->h_len -= clicks;	/* ditto */
 
-			/* Return the start address of the acquired block. */
-			return(old_base);
-		}
+        /* Delete the hole if used up completely. */
+        if (hp->h_len == 0) del_slot(prev_ptr, hp);
 
-		prev_ptr = hp;
-		hp = hp->h_next;
-	}
-  } while (swap_out());		/* try to swap some other process out */
+        /* Return the start address of the acquired block. */
+        return(old_base);
+      }
+
+      prev_ptr = hp;
+      hp = hp->h_next;
+    }
+    } while (swap_out());		/* try to swap some other process out */
+  }
   return(NO_MEM);
 }
 

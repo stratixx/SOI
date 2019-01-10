@@ -18,7 +18,6 @@
 #include <sys/ioctl.h>
 #include "mproc.h"
 #include "param.h"
-#include "mySysCalls.h"
 
 FORWARD _PROTOTYPE( void get_work, (void)				);
 FORWARD _PROTOTYPE( void mm_init, (void)				);

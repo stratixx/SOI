@@ -2,14 +2,50 @@
 #define MySysCalls_H
 
 
-void do_hole_map(void)
-{
 
+/* #SOI #lab5 MySysCalls */
+int do_hole_map()
+{
+    unsigned int buffSize = mm_in.m1_i1; /* size of user buffer */
+    struct hole* hPoint = hole_head;
+    unsigned int mmBuff[2*NR_HOLES + 1]; /* buffer which contain information about holes */
+    unsigned int mmBuffCount = 0;
+
+    while( hPoint != NIL_HOLE )
+    {
+        
+        if( hPoint->h_base >= swap_base )
+            break;
+        
+        if( (buffSize-mmBuffCount) < 3 )
+            break;
+        mmBuff[mmBuffCount++] = hPoint->h_len;
+        mmBuff[mmBuffCount++] = hPoint->h_base;
+
+
+        hPoint = hPoint->h_next;
+    }
+
+    mmBuff[mmBuffCount] = 0;
+
+    /* from MM process copy Data segment to calling process */
+    /* mm_in.m1_p1 contains pointer to user data buffer */
+	sys_copy(MM_PROC_NR, D, mmBuff,
+			mm_in.m_source, D, (phys_bytes) mm_in.m1_p1,
+			(phys_bytes) mmBuffCount);
+
+  return 0;
 }
 
-void do_worst_fit(void)
+/* #SOI #lab5 MySysCalls */
+int do_worst_fit()
 {
-    
+  if(mm_in.m1_i1==1)
+    enableWorstFit = 1;
+  else
+    enableWorstFit = 0;
+
+  return 0;
 }
 
 #endif
