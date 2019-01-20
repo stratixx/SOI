@@ -3,8 +3,8 @@
 *
 */
 
-#include "../inc/rmFS.h"
-#include "../inc/malditoFS.h"
+#include "../inc/rmmfs.h"
+#include "../inc/mfs.h"
 
 int main(int argc, char * argv[])
 {

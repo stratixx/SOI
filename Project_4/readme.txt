@@ -17,12 +17,12 @@ aby uruchamiać programy jako polecenia konsoli należy dodać folder bin do PAT
     -   export PATH=$PATH":./bin"
 
 dostępne polecenia:
-    -   mkfsFS  -   stworzenie systemu plików
-    -   rmfsFS  -   usunięcie systemu plików
-    -   infoFS  -   wypisanie informacji o systemie plików
-    -   lsFS    -   wypisanie zawartości systemu plików
-    -   cpFS    -   kopiowanie dwukierunkowe plików na system plików
-    -   rmFS    -   usunięcie plików z systemu plików
+    -   mkfsmfs  -   stworzenie systemu plików
+    -   rmfsmfs  -   usunięcie systemu plików
+    -   infomfs  -   wypisanie informacji o systemie plików
+    -   lsmfs    -   wypisanie zawartości systemu plików
+    -   cpmfs    -   kopiowanie dwukierunkowe plików na system plików
+    -   rmmfs    -   usunięcie plików z systemu plików
 
-Polecenia w ogólności zachowują się tak ich systemowe odpowiedniki bez dopisku 'FS'
+Polecenia w ogólności zachowują się tak ich systemowe odpowiedniki bez dopisku 'mfs'
 Więcej informacji o poleceniach można uzyskać po wpisaniu nazwy polecenia z argumentem --help

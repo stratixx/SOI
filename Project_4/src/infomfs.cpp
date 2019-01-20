@@ -3,8 +3,8 @@
 *
 */
 
-#include "../inc/infoFS.h"
-#include "../inc/malditoFS.h"
+#include "../inc/infomfs.h"
+#include "../inc/mfs.h"
 
 int main(int argc, char * argv[])
 {
@@ -12,7 +12,7 @@ int main(int argc, char * argv[])
 	for(n=0; n<argc; n++)
 	{
 		info(argv[n]);
-		info(" ");
+		info("\n\r");
 	}
 	info("\n\r");
 

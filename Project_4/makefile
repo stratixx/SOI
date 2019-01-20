@@ -6,7 +6,7 @@
 ###################################################################
 
 # nazwa projektu
-project_name = MalditoFS
+project_name = MFS
 
 # komenda kompilacji
 CC = gcc
@@ -23,7 +23,7 @@ o = obj
 ###################################################################
 
 # kompilacja wszystkich zaleznosci do pliku wykonywalnego
-all: malditoFS mkfsFS cpFS lsFS rmFS rmfsFS infoFS
+all: mfs mkmfs cpmfs lsmfs rmmfs infomfs
 
 # wyczyszczenie projektu
 clean: 
@@ -31,32 +31,28 @@ clean:
 	mkdir $o $b
 
 # kompilacja poszczegolnych zaleznosci. wywolywane przez regule all
-object0 = malditoFS
+object0 = mfs
 $(object0): $s/$(object0).cpp
 	$(CC) $s/$(object0).cpp -c -o $o/$(object0).o
 
-object1 = mkfsFS
-$(object1): malditoFS $s/$(object1).cpp 
-	$(CC) $o/malditoFS.o $s/$(object1).cpp   -o $b/$(object1)
+object1 = mkmfs
+$(object1): mfs $s/$(object1).cpp 
+	$(CC) $o/mfs.o $s/$(object1).cpp     -o $b/$(object1)
 
-object2 = cpFS
-$(object2): malditoFS $s/$(object2).cpp
-	$(CC) $o/malditoFS.o $s/$(object2).cpp     -o $b/$(object2)
+object2 = cpmfs
+$(object2): mfs $s/$(object2).cpp
+	$(CC) $o/mfs.o $s/$(object2).cpp     -o $b/$(object2)
 
-object3 = lsFS
-$(object3): malditoFS $s/$(object3).cpp
-	$(CC) $o/malditoFS.o $s/$(object3).cpp     -o $b/$(object3)
+object3 = lsmfs
+$(object3): mfs $s/$(object3).cpp
+	$(CC) $o/mfs.o $s/$(object3).cpp     -o $b/$(object3)
 
-object4 = rmFS
-$(object4): malditoFS $s/$(object4).cpp
-	$(CC) $o/malditoFS.o $s/$(object4).cpp     -o $b/$(object4)
+object4 = rmmfs
+$(object4): mfs $s/$(object4).cpp
+	$(CC) $o/mfs.o $s/$(object4).cpp     -o $b/$(object4)
 
-object5 = rmfsFS
-$(object5): malditoFS $s/$(object5).cpp
-	$(CC) $o/malditoFS.o $s/$(object5).cpp   -o $b/$(object5)
-
-object6 = infoFS
-$(object6): malditoFS $s/$(object6).cpp 
-	$(CC) $o/malditoFS.o $s/$(object6).cpp   -o $b/$(object6)
+object6 = infomfs
+$(object6): mfs $s/$(object6).cpp 
+	$(CC) $o/mfs.o $s/$(object6).cpp   -o $b/$(object6)
 
 
