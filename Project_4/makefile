@@ -9,7 +9,7 @@
 project_name = MFS
 
 # komenda kompilacji
-CC = gcc
+CC = g++
 
 # katalog zawierajacy pliki *.c
 s = src
@@ -33,7 +33,7 @@ clean:
 # kompilacja poszczegolnych zaleznosci. wywolywane przez regule all
 object0 = mfs
 $(object0): $s/$(object0).cpp
-	$(CC) $s/$(object0).cpp -c -o $o/$(object0).o
+	$(CC) $s/$(object0).cpp  -c -o $o/$(object0).o
 
 object1 = mkmfs
 $(object1): mfs $s/$(object1).cpp 

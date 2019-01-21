@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #define FILENAME_MAX_LENGTH 255
+#define FILESYSTEMNAME_MAX_LENGTH 255
 
 
 class MFS
@@ -29,10 +30,10 @@ class MFS
 
     typedef enum
     {
-        OPEN = 1<<0,
+        READ = 1<<0,
         CREATE = 1<<1, 
         WRITE = 1<<2
-    }openFileMode_t;
+    }fileMode_t;
 
     #define METADATA_T_SIZE (sizeof(metadata_t))
 
@@ -42,11 +43,11 @@ class MFS
     static MFS* mountFileSystem(const char* name);
     static int unmountFileSystem(MFS* fileSystem); 
 
-    fileHandle_t openFile( const char* fileName, openFileMode_t mode, uint32_t* fileSize);
+    fileHandle_t openFile( const char* fileName, fileMode_t mode, uint32_t* fileSize);
     int closeFile( const fileHandle_t fileHandle );
     int readFile( const fileHandle_t fileHandle, void* dest, uint32_t offset, uint32_t length );
     int writeFile( const fileHandle_t fileHandle, const void* src, uint32_t offset, uint32_t length );
-    int deleteFile( const fileHandle_t fileHandle );
+    int deleteFile( const char* fileName );
 
     private:
     MFS(const char* fileSystemName);
