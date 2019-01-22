@@ -9,20 +9,23 @@
 #include "../inc/mfs.h"
 
 
-void info( const char* info)
-{
-    printf("%s", info);
-}
-
 
 int MFS::makeFileSystem( const char* name, uint32_t size )
 {
     FILE* file = fopen(name, "w");
-
     char *ptr = new char[size];
-    memset(ptr, 0, size);
-    //TO DO: set filesystem structures initial data
+    fileSystemHeader_t fileSystemHeader;
 
+    strcpy(fileSystemHeader.guardText, FileSystemGuardText);
+    fileSystemHeader.fileSystemSize = size;
+    fileSystemHeader.metadataStart  = sizeof(fileSystemHeader_t);
+    fileSystemHeader.metadataIndex  = size/(4*1024);
+    fileSystemHeader.fileDataStart  = fileSystemHeader.metadataStart;
+    fileSystemHeader.fileDataStart += fileSystemHeader.metadataIndex*sizeof(metadata_t);
+    fileSystemHeader.fileDataSize   = size - fileSystemHeader.fileDataStart;
+
+    memset(ptr, 0, size);
+    memcpy(ptr, &fileSystemHeader, sizeof(fileSystemHeader_t));
     fwrite(ptr, size, 1, file);
     fclose(file);
     delete[] ptr;
@@ -74,4 +77,8 @@ MFS::MFS(const char* fileSystemName)
     //uint32_t size = strlen(fileSystemName);
     
     strcpy(this->fileSystemName, fileSystemName);
+
+    FILE* file = fopen(fileSystemName, "r");
+    fread(&fileSystemHeader, sizeof(fileSystemHeader_t), 1, file);
+    fclose(file);
 }

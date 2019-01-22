@@ -12,11 +12,30 @@
 
 #define FILENAME_MAX_LENGTH 255
 #define FILESYSTEMNAME_MAX_LENGTH 255
+#define FileSystemGuardText "MFS v0.0.1"
+#define FileSystemGuardLength (sizeof(FileSystemGuardText))
 
 
 class MFS
 {
     public:
+
+    typedef struct
+    {
+        // Nagłówek systemu plików MFS
+        char guardText[FileSystemGuardLength];
+        // Rozmiar dysku
+        uint32_t fileSystemSize;
+        // adres początku sekcji metadanych
+        uint32_t metadataStart;
+        // max ilość obiektów metadanych
+        uint32_t metadataIndex;
+        // adres początku sekcji danych plików
+        uint32_t fileDataStart;
+        // rozmiar sekcji danych plików
+        uint32_t fileDataSize;
+
+    }fileSystemHeader_t;
 
     typedef struct
     {
@@ -38,6 +57,7 @@ class MFS
     #define METADATA_T_SIZE (sizeof(metadata_t))
 
     char fileSystemName[255];
+    fileSystemHeader_t fileSystemHeader;
 
     static int makeFileSystem( const char* name, uint32_t size );
     static MFS* mountFileSystem(const char* name);
@@ -52,11 +72,6 @@ class MFS
     private:
     MFS(const char* fileSystemName);
 };
-
-
-
-
-void info( const char* info);
 
 
 #endif

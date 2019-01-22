@@ -5,16 +5,37 @@
 
 #include "../inc/infomfs.h"
 #include "../inc/mfs.h"
+#include <stdio.h>
+#include <iostream>
+
+using namespace std;
+
 
 int main(int argc, char * argv[])
 {
-	int n=0;
-	for(n=0; n<argc; n++)
-	{
-		info(argv[n]);
-		info("\n\r");
+	MFS * fs;
+	float eff;
+
+	if(argc>1)
+	{	
+		fs = MFS::mountFileSystem(argv[1]);
+
+		cout<<"name:                  \""<<fs->fileSystemName<<"\""<<endl;
+		cout<<"guardText:             \""<<fs->fileSystemHeader.guardText<<"\""<<endl;
+		cout<<"fileSystemSize:        "<<fs->fileSystemHeader.fileSystemSize<<" KB"<<endl;
+		cout<<"metadata starts at:    "<<fs->fileSystemHeader.metadataStart<<endl;
+		cout<<"metadata elements:     "<<fs->fileSystemHeader.metadataIndex<<endl;
+		cout<<"metadata used elements:"<<"---"<<endl;
+		cout<<"fileData starts at:    "<<fs->fileSystemHeader.fileDataStart<<endl;
+		cout<<"fileDataSize:          "<<fs->fileSystemHeader.fileDataSize<<" KB"<<endl;
+		cout<<"FileSystem efficiency: "<<100.0*fs->fileSystemHeader.fileDataSize/fs->fileSystemHeader.fileSystemSize<<"%"<<endl;
+
+		MFS::unmountFileSystem(fs);
 	}
-	info("\n\r");
+	else
+	{
+		cout<<"Usage: infomfs <fileSystemName>"<<endl;
+	}
 
 	return 0;
 }
