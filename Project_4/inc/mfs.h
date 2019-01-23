@@ -54,20 +54,26 @@ class MFS
         WRITE = 1<<2
     }fileMode_t;
 
+    typedef enum
+    {
+        OK = 0,
+        UNIMPLEMENTED = -1,
+    }returnCode;
+
     #define METADATA_T_SIZE (sizeof(metadata_t))
 
     char fileSystemName[255];
     fileSystemHeader_t fileSystemHeader;
 
-    static int makeFileSystem( const char* name, uint32_t size );
+    static returnCode makeFileSystem( const char* name, uint32_t size );
     static MFS* mountFileSystem(const char* name);
-    static int unmountFileSystem(MFS* fileSystem); 
+    static returnCode unmountFileSystem(MFS* fileSystem); 
 
-    fileHandle_t openFile( const char* fileName, fileMode_t mode, uint32_t* fileSize);
-    int closeFile( const fileHandle_t fileHandle );
-    int readFile( const fileHandle_t fileHandle, void* dest, uint32_t offset, uint32_t length );
-    int writeFile( const fileHandle_t fileHandle, const void* src, uint32_t offset, uint32_t length );
-    int deleteFile( const char* fileName );
+    fileHandle_t* openFile( const char* fileName, fileMode_t mode, uint32_t* fileSize);
+    returnCode closeFile( fileHandle_t* fileHandle );
+    returnCode readFile( const fileHandle_t* fileHandle, void* dest, uint32_t offset, uint32_t length );
+    returnCode writeFile( const fileHandle_t* fileHandle, const void* src, uint32_t offset, uint32_t length );
+    returnCode deleteFile( const char* fileName );
 
     private:
     MFS(const char* fileSystemName);

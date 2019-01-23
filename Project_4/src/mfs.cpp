@@ -10,7 +10,7 @@
 
 
 
-int MFS::makeFileSystem( const char* name, uint32_t size )
+MFS::returnCode MFS::makeFileSystem( const char* name, uint32_t size )
 {
     FILE* file = fopen(name, "w");
     char *ptr = new char[size];
@@ -29,7 +29,7 @@ int MFS::makeFileSystem( const char* name, uint32_t size )
     fwrite(ptr, size, 1, file);
     fclose(file);
     delete[] ptr;
-    return 0;
+    return OK;
 }
 
 MFS* MFS::mountFileSystem(const char* name)
@@ -37,38 +37,50 @@ MFS* MFS::mountFileSystem(const char* name)
     return new MFS(name);
 }
 
-int MFS::unmountFileSystem(MFS* fileSystem)
+MFS::returnCode MFS::unmountFileSystem(MFS* fileSystem)
 {
     if(fileSystem)
         delete fileSystem;
-    return 0;
+    return OK;
 }
 
 
-MFS::fileHandle_t MFS::openFile( const char* fileName, fileMode_t mode, uint32_t* fileSize)
+MFS::fileHandle_t* MFS::openFile( const char* fileName, fileMode_t mode, uint32_t* fileSize)
 {
-    fileHandle_t handle;
-    return handle;
+    fileHandle_t* fileHandle = nullptr;
+    metadata_t * metadata;
+    
+    for(uint32_t n=fileSystemHeader.metadataStart; n<fileSystemHeader.fileDataStart; n+=sizeof(fileSystemHeader_t))
+    {
+        
+    }
+
+    //fileHandle = new fileHandle_t;
+
+    return fileHandle;
 }
 
-int MFS::closeFile( const fileHandle_t fileHandle )
+MFS::returnCode MFS::closeFile( fileHandle_t* fileHandle )
 {
-    return -1;
+    if( fileHandle!=nullptr )
+        delete fileHandle;
+    
+    return OK;
 }
 
-int MFS::readFile( const fileHandle_t fileHandle, void* dest, uint32_t offset, uint32_t length )
+MFS::returnCode MFS::readFile( const fileHandle_t* fileHandle, void* dest, uint32_t offset, uint32_t length )
 {
-    return -1;
+    return UNIMPLEMENTED;
 }
 
-int MFS::writeFile( const fileHandle_t fileHandle, const void* src, uint32_t offset, uint32_t length )
+MFS::returnCode MFS::writeFile( const fileHandle_t* fileHandle, const void* src, uint32_t offset, uint32_t length )
 {
-    return -1;
+    return UNIMPLEMENTED;
 }
 
-int MFS::deleteFile( const char* fileName )
+MFS::returnCode MFS::deleteFile( const char* fileName )
 {
-    return -1;
+    return UNIMPLEMENTED;
 }
 
 
