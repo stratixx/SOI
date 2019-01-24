@@ -8,6 +8,7 @@
 #define mfs_H
 
 
+#include <stdio.h>
 #include <stdint.h>
 
 #define FILENAME_MAX_LENGTH 255
@@ -64,6 +65,7 @@ class MFS
 
     char fileSystemName[255];
     fileSystemHeader_t fileSystemHeader;
+    FILE* disc;
 
     static returnCode makeFileSystem( const char* name, uint32_t size );
     static MFS* mountFileSystem(const char* name);
@@ -77,6 +79,8 @@ class MFS
 
     private:
     MFS(const char* fileSystemName);
+    ~MFS();
+    fileHandle_t* createFile( const char* fileName, uint32_t* size);
 };
 
 

@@ -40,22 +40,48 @@ MFS* MFS::mountFileSystem(const char* name)
 MFS::returnCode MFS::unmountFileSystem(MFS* fileSystem)
 {
     if(fileSystem)
+    {
         delete fileSystem;
+    }
     return OK;
 }
 
+MFS::fileHandle_t* MFS::createFile( const char* fileName, uint32_t* size)
+{
+
+}
 
 MFS::fileHandle_t* MFS::openFile( const char* fileName, fileMode_t mode, uint32_t* fileSize)
 {
-    fileHandle_t* fileHandle = nullptr;
-    metadata_t * metadata;
-    
-    for(uint32_t n=fileSystemHeader.metadataStart; n<fileSystemHeader.fileDataStart; n+=sizeof(fileSystemHeader_t))
+    fileHandle_t* fileHandle;
+    metadata_t metadata;
+    uint32_t addr;
+
+    fseek(disc, fileSystemHeader.metadataStart, 0);
+    for(addr = fileSystemHeader.metadataStart; 
+        addr<fileSystemHeader.fileDataStart; 
+        addr+=sizeof(metadata_t)
+        )
     {
-        
+        fread(&metadata, sizeof(metadata_t), 1, disc);
+        if( metadata.used && (0==strcmp(metadata.fileName, fileName)) )
+            break;        
     }
 
-    //fileHandle = new fileHandle_t;
+    if(addr>=fileSystemHeader.fileDataStart)
+    {
+        // pliku nie znaleziono
+        if(mode&fileMode_t::CREATE)
+
+        return nullptr;
+    }
+    else
+    {
+        // plik znaleziony
+
+        fileHandle = new fileHandle_t;
+        *fileHandle = addr;
+    }
 
     return fileHandle;
 }
@@ -90,7 +116,11 @@ MFS::MFS(const char* fileSystemName)
     
     strcpy(this->fileSystemName, fileSystemName);
 
-    FILE* file = fopen(fileSystemName, "r");
-    fread(&fileSystemHeader, sizeof(fileSystemHeader_t), 1, file);
-    fclose(file);
+    disc = fopen(fileSystemName, "r+");
+    fread(&fileSystemHeader, sizeof(fileSystemHeader_t), 1, disc);
+}
+
+MFS::~MFS()
+{
+    fclose( this->disc );    
 }
