@@ -41,7 +41,7 @@ class MFS
         uint32_t fileDataUsed;
 
     }fileSystemHeader_t;
-
+    
     typedef struct
     {
         bool used;
@@ -49,6 +49,13 @@ class MFS
         uint32_t size;
         char fileName[FILENAME_MAX_LENGTH];
     }metadata_t;
+
+    typedef struct
+    {
+        uint32_t base;
+        uint32_t size; 
+        uint32_t metadataAddr;    
+    }dataBlock_t;
 
     typedef uint32_t fileHandle_t;
 
@@ -77,6 +84,7 @@ class MFS
     fileSystemHeader_t fileSystemHeader;
     FILE* disc;
     returnCode lastCode;
+    dataBlock_t* dataMap;
 
     static returnCode makeFileSystem( const char* name, uint32_t size );
     static MFS* mountFileSystem(const char* name);

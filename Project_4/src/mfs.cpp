@@ -36,13 +36,16 @@ MFS::returnCode MFS::makeFileSystem( const char* name, uint32_t size )
 
 MFS* MFS::mountFileSystem(const char* name)
 {
+    metadata_t metadata;
+    uint32_t addr;
     MFS* fs = new MFS(name);
     if( fs->lastCode!=OK )
     {
         delete fs;
         return nullptr;
     }
-    return new MFS(name);
+
+    return fs;
 }
 
 MFS::returnCode MFS::unmountFileSystem(MFS* fileSystem)
@@ -81,15 +84,13 @@ MFS::fileHandle_t* MFS::createFile( const char* fileName, uint32_t* size)
     // znaleziono wolny slot metadata, szukanie miejsca w przestrzeni danych
     metadata.base = allocData(*size);
     if(metadata.base==0)
-    {
-        lastCode = NoEnoughDataSpace;
         return nullptr;
-    }
     // znaleziono miejsce w przestrzeni danych
     // uzupelnienie struktury metadata
     metadata.size = *size;
     strcpy(metadata.fileName, fileName);
     metadata.used = true;
+    fileSystemHeader.metaDataUsed++;
     // zapisanie metadanych na dysk
     fseek(disc, addr, 0);
     fwrite(&metadata, sizeof(metadata), 1, disc);
@@ -101,6 +102,62 @@ MFS::fileHandle_t* MFS::createFile( const char* fileName, uint32_t* size)
 
 uint32_t MFS::allocData(uint32_t size)
 {
+    metadata_t metadata;
+    dataBlock_t dataBlock;
+    dataBlock.base = 0;
+    lastCode = NoEnoughDataSpace;
+    if(fileSystemHeader.metaDataUsed==0)
+        return fileSystemHeader.fileDataStart;
+
+    fseek(disc, fileSystemHeader.metadataStart, 0);
+
+    // stworzenie mapy zajetosci sekcji danych
+    fseek(disc, fileSystemHeader.metadataStart, 0);
+    for(uint32_t n=0; n<fileSystemHeader.metaDataUsed; n++)
+    {
+        fread(&metadata, sizeof(metadata_t), 1, disc);
+        if( metadata.used )
+        {
+            dataMap[n].base = metadata.base;
+            dataMap[n].size = metadata.size;
+            dataMap[n].metadataAddr = fileSystemHeader.metadataStart;
+            dataMap[n].metadataAddr+= n*sizeof(metadata_t); 
+        }     
+    }
+
+    // sortowanie zajetych obszarow
+    for(uint32_t i=0; i<(fileSystemHeader.metaDataUsed-1); i++)
+        for(uint32_t j=0; j<(fileSystemHeader.metaDataUsed-1); j++)
+            if( dataMap[j].base > dataMap[j+1].base )
+            {
+                dataBlock_t tmp;
+                tmp = dataMap[j];
+                dataMap[j] = dataMap[j+1];
+                dataMap[j+1] = dataMap[j];
+            }
+
+    if((dataMap[0].base-fileSystemHeader.metadataStart)>=size)
+    {
+        fileSystemHeader.fileDataUsed += size;
+        lastCode = OK;  
+        return fileSystemHeader.fileDataStart;
+    }
+
+    for(int n=1; n<(fileSystemHeader.metaDataUsed-1); n++)
+        if( dataMap[n].base - dataMap[n-1].base - dataMap[n-1].size >= size )
+        {
+            fileSystemHeader.fileDataUsed += size;
+        lastCode = OK;
+            return dataMap[n-1].base + dataMap[n-1].size;
+        }
+    
+    if( fileSystemHeader.fileSystemSize-dataMap[fileSystemHeader.metaDataUsed-1].base-dataMap[fileSystemHeader.metaDataUsed-1].size )
+    {
+        fileSystemHeader.fileDataUsed += size;
+        lastCode = OK;
+        return dataMap[fileSystemHeader.metaDataUsed-1].base + dataMap[fileSystemHeader.metaDataUsed-1].size;
+    }
+
     return 0;
 }
 
@@ -188,14 +245,19 @@ MFS::MFS(const char* fileSystemName)
     disc = fopen(fileSystemName, "r+");
     fread(&fileSystemHeader, sizeof(fileSystemHeader_t), 1, disc);
 
-    if(0==strcmp(fileSystemHeader.guardText, FileSystemGuardText))
-        lastCode = OK;
-    else
+    if(0!=strcmp(fileSystemHeader.guardText, FileSystemGuardText))
+    {
         lastCode = GuardTextMismatch;
+        return;
+    }
     
+    dataMap = new dataBlock_t[fileSystemHeader.metadataIndex];
+
+    lastCode = OK;
 }
 
 MFS::~MFS()
 {
     fclose( this->disc );    
+    delete[] dataMap;
 }
