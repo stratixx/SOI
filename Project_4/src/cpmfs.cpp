@@ -31,6 +31,11 @@ int main(int argc, char * argv[])
 	}
 
 	fs = MFS::mountFileSystem(argv[2]);
+	if(fs==nullptr)
+	{
+		cout<<"MountFileSystem error! Abort!"<<endl;
+		return -2;
+	}
 
 	if( 0==strcmp("-TO", argv[1]) )
 	{
@@ -42,7 +47,7 @@ int main(int argc, char * argv[])
 			fileMFS = fs->openFile(argv[n], MFS::fileMode_t::CREATE, &fileMFSsize);
 			if(fileMFS==nullptr)
 			{
-				cout<<"MFS openFile error"<<endl;
+				cout<<"MFS openFile error: "<<fs->lastCode<<endl;
 				continue;
 			}
 

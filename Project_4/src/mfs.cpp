@@ -20,9 +20,11 @@ MFS::returnCode MFS::makeFileSystem( const char* name, uint32_t size )
     fileSystemHeader.fileSystemSize = size;
     fileSystemHeader.metadataStart  = sizeof(fileSystemHeader_t);
     fileSystemHeader.metadataIndex  = size/(4*1024);
+    fileSystemHeader.metaDataUsed   = 0;
     fileSystemHeader.fileDataStart  = fileSystemHeader.metadataStart;
     fileSystemHeader.fileDataStart += fileSystemHeader.metadataIndex*sizeof(metadata_t);
     fileSystemHeader.fileDataSize   = size - fileSystemHeader.fileDataStart;
+    fileSystemHeader.fileDataUsed   = 0;
 
     memset(ptr, 0, size);
     memcpy(ptr, &fileSystemHeader, sizeof(fileSystemHeader_t));
@@ -34,6 +36,12 @@ MFS::returnCode MFS::makeFileSystem( const char* name, uint32_t size )
 
 MFS* MFS::mountFileSystem(const char* name)
 {
+    MFS* fs = new MFS(name);
+    if( fs->lastCode!=OK )
+    {
+        delete fs;
+        return nullptr;
+    }
     return new MFS(name);
 }
 
@@ -48,12 +56,57 @@ MFS::returnCode MFS::unmountFileSystem(MFS* fileSystem)
 
 MFS::fileHandle_t* MFS::createFile( const char* fileName, uint32_t* size)
 {
+    fileHandle_t* fileHandle = nullptr;
+    metadata_t metadata;
+    uint32_t addr;
 
+    fseek(disc, fileSystemHeader.metadataStart, 0);
+    // szukanie wolnego slotu metadata
+    for(addr = fileSystemHeader.metadataStart; 
+        addr<fileSystemHeader.fileDataStart; 
+        addr+=sizeof(metadata_t)
+        )
+    {
+        fread(&metadata, sizeof(metadata_t), 1, disc);
+        if( !metadata.used )
+            break; 
+    }
+
+    if(addr>=fileSystemHeader.fileDataStart)
+    {
+        lastCode = MetaDataArrayFull;
+        return nullptr;
+    }
+
+    // znaleziono wolny slot metadata, szukanie miejsca w przestrzeni danych
+    metadata.base = allocData(*size);
+    if(metadata.base==0)
+    {
+        lastCode = NoEnoughDataSpace;
+        return nullptr;
+    }
+    // znaleziono miejsce w przestrzeni danych
+    // uzupelnienie struktury metadata
+    metadata.size = *size;
+    strcpy(metadata.fileName, fileName);
+    metadata.used = true;
+    // zapisanie metadanych na dysk
+    fseek(disc, addr, 0);
+    fwrite(&metadata, sizeof(metadata), 1, disc);
+    lastCode = OK;
+    
+
+    return fileHandle;
+}
+
+uint32_t MFS::allocData(uint32_t size)
+{
+    return 0;
 }
 
 MFS::fileHandle_t* MFS::openFile( const char* fileName, fileMode_t mode, uint32_t* fileSize)
 {
-    fileHandle_t* fileHandle;
+    fileHandle_t* fileHandle = nullptr;
     metadata_t metadata;
     uint32_t addr;
 
@@ -71,16 +124,32 @@ MFS::fileHandle_t* MFS::openFile( const char* fileName, fileMode_t mode, uint32_
     if(addr>=fileSystemHeader.fileDataStart)
     {
         // pliku nie znaleziono
-        if(mode&fileMode_t::CREATE)
-
-        return nullptr;
+        if(mode&fileMode_t::CREATE) 
+        {
+            // stwórz plik
+            fileHandle = createFile(fileName, fileSize);      
+        }
+        else 
+        {
+            // nie zadano stworzenia pliku
+            lastCode = NotFound;
+        }        
     }
     else
     {
-        // plik znaleziony
-
-        fileHandle = new fileHandle_t;
-        *fileHandle = addr;
+        // plik znaleziono
+        if(mode&fileMode_t::CREATE) 
+        {
+            // próba stworzenia istniejącego pliku
+            lastCode = Exist;       
+        }
+        else 
+        {
+            // plik znaleziony, ustaw wskazanie na strukture metadata pliku
+            fileHandle = new fileHandle_t;
+            *fileHandle = addr;
+            lastCode = OK;
+        }      
     }
 
     return fileHandle;
@@ -90,23 +159,23 @@ MFS::returnCode MFS::closeFile( fileHandle_t* fileHandle )
 {
     if( fileHandle!=nullptr )
         delete fileHandle;
-    
+    lastCode = OK;
     return OK;
 }
 
 MFS::returnCode MFS::readFile( const fileHandle_t* fileHandle, void* dest, uint32_t offset, uint32_t length )
 {
-    return UNIMPLEMENTED;
+    return Unimplemented;
 }
 
 MFS::returnCode MFS::writeFile( const fileHandle_t* fileHandle, const void* src, uint32_t offset, uint32_t length )
 {
-    return UNIMPLEMENTED;
+    return Unimplemented;
 }
 
 MFS::returnCode MFS::deleteFile( const char* fileName )
 {
-    return UNIMPLEMENTED;
+    return Unimplemented;
 }
 
 
@@ -118,6 +187,12 @@ MFS::MFS(const char* fileSystemName)
 
     disc = fopen(fileSystemName, "r+");
     fread(&fileSystemHeader, sizeof(fileSystemHeader_t), 1, disc);
+
+    if(0==strcmp(fileSystemHeader.guardText, FileSystemGuardText))
+        lastCode = OK;
+    else
+        lastCode = GuardTextMismatch;
+    
 }
 
 MFS::~MFS()

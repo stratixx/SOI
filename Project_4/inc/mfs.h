@@ -13,7 +13,7 @@
 
 #define FILENAME_MAX_LENGTH 255
 #define FILESYSTEMNAME_MAX_LENGTH 255
-#define FileSystemGuardText "MFS v0.0.1"
+#define FileSystemGuardText "MFS v0.2.0     "
 #define FileSystemGuardLength (sizeof(FileSystemGuardText))
 
 
@@ -31,10 +31,14 @@ class MFS
         uint32_t metadataStart;
         // max ilość obiektów metadanych
         uint32_t metadataIndex;
+        // ilość uzytych obiektów metadata - ilość plików
+        uint32_t metaDataUsed;
         // adres początku sekcji danych plików
         uint32_t fileDataStart;
         // rozmiar sekcji danych plików
         uint32_t fileDataSize;
+        // ilosc zajetego miejsca
+        uint32_t fileDataUsed;
 
     }fileSystemHeader_t;
 
@@ -58,7 +62,13 @@ class MFS
     typedef enum
     {
         OK = 0,
-        UNIMPLEMENTED = -1,
+        Unimplemented = -1,
+        NotFound = -2, 
+        Exist = -3, 
+        CreateError = -4, 
+        GuardTextMismatch = -5, 
+        MetaDataArrayFull = -6,
+        NoEnoughDataSpace = -7
     }returnCode;
 
     #define METADATA_T_SIZE (sizeof(metadata_t))
@@ -66,6 +76,7 @@ class MFS
     char fileSystemName[255];
     fileSystemHeader_t fileSystemHeader;
     FILE* disc;
+    returnCode lastCode;
 
     static returnCode makeFileSystem( const char* name, uint32_t size );
     static MFS* mountFileSystem(const char* name);
@@ -81,6 +92,7 @@ class MFS
     MFS(const char* fileSystemName);
     ~MFS();
     fileHandle_t* createFile( const char* fileName, uint32_t* size);
+    uint32_t allocData(uint32_t size);
 };
 
 
