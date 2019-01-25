@@ -33,8 +33,8 @@ int main(int argc, char * argv[])
 		cout<<"metadata used elements:"<<fs->fileSystemHeader.metaDataUsed<<endl;
 		cout<<"fileData starts at:    "<<fs->fileSystemHeader.fileDataStart<<endl;
 		cout<<"fileDataSize:          "<<fs->fileSystemHeader.fileDataSize/1024<<" KB"<<endl;
-		cout<<"fileDataUsed:          "<<(int)(100.0*fs->fileSystemHeader.fileDataUsed/fs->fileSystemHeader.fileDataSize)<<"%"<<endl;
-		cout<<"fileSystem efficiency: "<<(int)(100.0*fs->fileSystemHeader.fileDataSize/fs->fileSystemHeader.fileSystemSize)<<"%"<<endl;
+		cout<<"fileDataUsed:          "<<(float)(100.0*fs->fileSystemHeader.fileDataUsed/fs->fileSystemHeader.fileDataSize)<<"%"<<endl;
+		cout<<"fileSystem efficiency: "<<(float)(100.0*fs->fileSystemHeader.fileDataSize/fs->fileSystemHeader.fileSystemSize)<<"%"<<endl;
 
 
 

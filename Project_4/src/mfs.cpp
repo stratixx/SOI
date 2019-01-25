@@ -89,21 +89,19 @@ MFS::fileHandle_t* MFS::createFile( const char* fileName, uint32_t* size)
         return nullptr;
     // znaleziono miejsce w przestrzeni danych
     // uzupelnienie struktury metadata
+    fileSystemHeader.fileDataUsed += *size;
+    fileSystemHeader.metaDataUsed++;
     metadata.size = *size;
     strcpy(metadata.fileName, fileName);
     metadata.used = true;
-    fileSystemHeader.metaDataUsed++;
     // zapisanie metadanych na dysk
     fseek(disc, addr, 0);
-    fwrite(&metadata, sizeof(metadata), 1, disc);
+    fwrite(&metadata, sizeof(metadata_t), 1, disc);
+    // stworzenie handle pliku
     fileHandle = new fileHandle_t;
     *fileHandle = addr;
-    // zapisanie metadanych pliku na dysk
-    fseek(disc, addr, 0);
-    fwrite(&metadata, sizeof(metadata_t), 1, disc);
     lastCode = OK;
     
-
     return fileHandle;
 }
 
@@ -113,8 +111,13 @@ uint32_t MFS::allocData(uint32_t size)
     dataBlock_t dataBlock;
     dataBlock.base = 0;
     lastCode = NoEnoughDataSpace;
+
     if(fileSystemHeader.metaDataUsed==0)
+    {
+        lastCode = OK;  
+        printf("|printf0|");
         return fileSystemHeader.fileDataStart;
+    }
 
     fseek(disc, fileSystemHeader.metadataStart, 0);
 
@@ -145,7 +148,6 @@ uint32_t MFS::allocData(uint32_t size)
 
     if((dataMap[0].base-fileSystemHeader.metadataStart)>=size)
     {
-        fileSystemHeader.fileDataUsed += size;
         lastCode = OK;  
         printf("|printf1|");
         return fileSystemHeader.fileDataStart;
@@ -154,15 +156,13 @@ uint32_t MFS::allocData(uint32_t size)
     for(int n=1; n<(fileSystemHeader.metaDataUsed-1); n++)
         if( dataMap[n].base - dataMap[n-1].base - dataMap[n-1].size >= size )
         {
-            fileSystemHeader.fileDataUsed += size;
-        lastCode = OK;
-        printf("|printf2|");
+            lastCode = OK;
+            printf("|printf2|");
             return dataMap[n-1].base + dataMap[n-1].size;
         }
     
     if( fileSystemHeader.fileSystemSize-dataMap[fileSystemHeader.metaDataUsed-1].base-dataMap[fileSystemHeader.metaDataUsed-1].size )
     {
-        fileSystemHeader.fileDataUsed += size;
         lastCode = OK;
         printf("|printf3|");
         return dataMap[fileSystemHeader.metaDataUsed-1].base + dataMap[fileSystemHeader.metaDataUsed-1].size;
@@ -251,8 +251,15 @@ MFS::MFS(const char* fileSystemName)
     //uint32_t size = strlen(fileSystemName);
     
     strcpy(this->fileSystemName, fileSystemName);
+    dataMap = nullptr;
 
     disc = fopen(fileSystemName, "r+");
+    if(disc==nullptr)
+    {
+        lastCode = DiscFileError;
+        return;
+    }
+
     fread(&fileSystemHeader, sizeof(fileSystemHeader_t), 1, disc);
 
     if(0!=strcmp(fileSystemHeader.guardText, FileSystemGuardText))
@@ -268,6 +275,8 @@ MFS::MFS(const char* fileSystemName)
 
 MFS::~MFS()
 {
-    fclose( this->disc );    
-    delete[] dataMap;
+    if(disc!=nullptr)
+        fclose( disc );    
+    if( dataMap!=nullptr)
+        delete[] dataMap;
 }
