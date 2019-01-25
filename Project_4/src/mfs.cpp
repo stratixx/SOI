@@ -122,8 +122,6 @@ uint32_t MFS::allocData(uint32_t size)
         return fileSystemHeader.fileDataStart;
     }
 
-    fseek(disc, fileSystemHeader.metadataStart, 0);
-
     // stworzenie mapy zajetosci sekcji danych
     fseek(disc, fileSystemHeader.metadataStart, 0);
     for(uint32_t n=0; n<fileSystemHeader.metaDataUsed; n++)
@@ -149,7 +147,7 @@ uint32_t MFS::allocData(uint32_t size)
                 dataMap[j+1] = dataMap[j];
             }
 
-    if((dataMap[0].base-fileSystemHeader.metadataStart)>=size)
+    if((dataMap[0].base-fileSystemHeader.fileDataStart)>=size)
     {
         lastCode = OK;  
         cout<<"|printf1|";
@@ -218,6 +216,7 @@ MFS::fileHandle_t* MFS::openFile( const char* fileName, fileMode_t mode, uint32_
             // plik znaleziony, ustaw wskazanie na strukture metadata pliku
             fileHandle = new fileHandle_t;
             *fileHandle = addr;
+            *fileSize = metadata.size;
             lastCode = OK;
         }      
     }
@@ -235,17 +234,53 @@ MFS::returnCode MFS::closeFile( fileHandle_t* fileHandle )
 
 MFS::returnCode MFS::readFile( const fileHandle_t* fileHandle, void* dest, uint32_t offset, uint32_t length )
 {
-    return Unimplemented;
+    metadata_t metadata;
+
+    fseek(disc, *fileHandle, 0);
+    fread(&metadata, sizeof(metadata_t), 1, disc);
+
+    if( metadata.size<(offset+length) )
+        return ReadDataSizeError;
+    
+    fseek(disc, metadata.base+offset, 0);
+    fread(dest, length, 1, disc);
+    return OK;
 }
 
 MFS::returnCode MFS::writeFile( const fileHandle_t* fileHandle, const void* src, uint32_t offset, uint32_t length )
-{
-    return Unimplemented;
+{    
+    metadata_t metadata;
+
+    fseek(disc, *fileHandle, 0);
+    fread(&metadata, sizeof(metadata_t), 1, disc);
+
+    if( metadata.size<(offset+length) )
+        return WriteDataSizeError;
+    
+    fseek(disc, metadata.base+offset, 0);
+    fwrite(src, length, 1, disc);
+    return OK;
 }
 
 MFS::returnCode MFS::deleteFile( const char* fileName )
 {
-    return Unimplemented;
+    fileHandle_t* fileHandle;
+    uint32_t n = 1;
+    metadata_t metadata;
+
+    fileHandle = openFile(fileName, fileMode_t::READ, &n);
+
+    if( fileHandle==nullptr )
+        return NotFound;
+
+    fseek(disc, *fileHandle, 0);
+    fread(&metadata, sizeof(metadata_t), 1, disc);
+    metadata.used = false;
+    fileSystemHeader.fileDataUsed -= metadata.size;
+    fileSystemHeader.metaDataUsed--;
+    fseek(disc, *fileHandle, 0);
+    fwrite(&metadata, sizeof(metadata_t), 1, disc);
+    return OK;
 }
 
 MFS::returnCode MFS::fileList()

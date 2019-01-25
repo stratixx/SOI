@@ -76,7 +76,9 @@ class MFS
         GuardTextMismatch = -5, 
         MetaDataArrayFull = -6,
         NoEnoughDataSpace = -7,
-        DiscFileError = -8
+        DiscFileError = -8, 
+        WriteDataSizeError = -9, 
+        ReadDataSizeError = -10
     }returnCode;
 
     #define METADATA_T_SIZE (sizeof(metadata_t))

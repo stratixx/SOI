@@ -14,19 +14,15 @@ int main(int argc, char * argv[])
 {
 	MFS * fs;
 	MFS::fileHandle_t* fileMFS;
-	uint32_t fileMFSsize;
+	uint32_t fileSize;
 	MFS::returnCode result;
 	FILE* fileH;
+	char* buf;
 
-	for(int n=0; n<argc; n++)
-		cout<<argv[n]<<endl;
-	
-
-	cout<<"----------------"<<endl;
-
-	if(argc<=4 || ((0!=strcmp("-TO", argv[1])) && (0!=strcmp("-FROM", argv[1]))) )
+	if(argc<4 || ((0!=strcmp("-TO", argv[1])) && (0!=strcmp("-FROM", argv[1]))) )
 	{
-		usage_of_cpmfs();
+		cout<<"Usage: cpmfs -TO <fileSystemName> <linuxFile0> <linuxFile1> ..."<<endl;
+		cout<<"Usage: cpmfs -FROM <fileSystemName> <MFSFile0> <MFSFile1> ..."<<endl;
 		return -1;
 	}
 
@@ -43,19 +39,28 @@ int main(int argc, char * argv[])
 
 		for(int n=3; n<argc; n++)
 		{
+			cout<<argv[n]<<"... ";
+
 			fileH = fopen(argv[n], "r");
 			fseek(fileH, 0, SEEK_END);
-			fileMFSsize = ftell(fileH);
+			fileSize = ftell(fileH);
 
-			cout<<argv[n]<<"... ";
-			fileMFS = fs->openFile(argv[n], MFS::fileMode_t::CREATE, &fileMFSsize);
+			fileMFS = fs->openFile(argv[n], MFS::fileMode_t::CREATE, &fileSize);
 			if(fileMFS==nullptr)
 			{
 				cout<<"MFS openFile error: "<<fs->lastCode<<endl;
+				fclose(fileH);
 				continue;
 			}
-
-			cout<<"ok"<<endl;
+			buf = new char[fileSize];
+			fseek(fileH, 0, SEEK_SET);
+			fread(buf, fileSize, 1,fileH);
+			if( fs->writeFile(fileMFS, buf, 0, fileSize)!=MFS::returnCode::OK )
+				cout<<"MFS writeFile error: "<<fs->lastCode<<endl;
+			else
+				cout<<"ok"<<endl;
+			
+			delete[] buf;
 			fs->closeFile(fileMFS);
 			fclose(fileH);
 		}
@@ -68,7 +73,27 @@ int main(int argc, char * argv[])
 		{
 			cout<<argv[n]<<"... ";
 
-			cout<<"unimpl"<<endl;
+			fileMFS = fs->openFile(argv[n], MFS::fileMode_t::READ, &fileSize);
+			if(fileMFS==nullptr)
+			{
+				cout<<"MFS openFile error: "<<fs->lastCode<<endl;
+				continue;
+			}
+			buf = new char[fileSize];
+
+			if( fs->readFile(fileMFS, buf, 0, fileSize)!=MFS::returnCode::OK )
+				cout<<"MFS readFile error: "<<fs->lastCode<<endl;
+			else
+			{
+				fileH = fopen(argv[n], "w");
+				fseek(fileH, 0, SEEK_SET);
+				fwrite(buf, fileSize, 1,fileH);
+				fclose(fileH);
+				cout<<"ok"<<endl;
+			}
+			
+			delete[] buf;
+			fs->closeFile(fileMFS);
 		}
 	}
 		
@@ -78,7 +103,5 @@ int main(int argc, char * argv[])
 
 void usage_of_cpmfs()
 {
-	cout<<"Usage: cpmfs -TO <fileSystemName> <linuxFile0> <linuxFile1> ..."<<endl;
-	cout<<"Usage: cpmfs -FROM <fileSystemName> <MFSFile0> <MFSFile1> ..."<<endl;
 
 }
