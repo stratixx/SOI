@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <memory.h>
 #include "../inc/mfs.h"
+#include <iostream>
+
+using namespace std;
 
 
 
@@ -115,7 +118,7 @@ uint32_t MFS::allocData(uint32_t size)
     if(fileSystemHeader.metaDataUsed==0)
     {
         lastCode = OK;  
-        printf("|printf0|");
+        cout<<"|printf0|";
         return fileSystemHeader.fileDataStart;
     }
 
@@ -149,7 +152,7 @@ uint32_t MFS::allocData(uint32_t size)
     if((dataMap[0].base-fileSystemHeader.metadataStart)>=size)
     {
         lastCode = OK;  
-        printf("|printf1|");
+        cout<<"|printf1|";
         return fileSystemHeader.fileDataStart;
     }
 
@@ -157,14 +160,14 @@ uint32_t MFS::allocData(uint32_t size)
         if( dataMap[n].base - dataMap[n-1].base - dataMap[n-1].size >= size )
         {
             lastCode = OK;
-            printf("|printf2|");
+            cout<<"|printf2|";
             return dataMap[n-1].base + dataMap[n-1].size;
         }
     
     if( fileSystemHeader.fileSystemSize-dataMap[fileSystemHeader.metaDataUsed-1].base-dataMap[fileSystemHeader.metaDataUsed-1].size )
     {
         lastCode = OK;
-        printf("|printf3|");
+        cout<<"|printf3|";
         return dataMap[fileSystemHeader.metaDataUsed-1].base + dataMap[fileSystemHeader.metaDataUsed-1].size;
     }
 
@@ -245,6 +248,27 @@ MFS::returnCode MFS::deleteFile( const char* fileName )
     return Unimplemented;
 }
 
+MFS::returnCode MFS::fileList()
+{
+    metadata_t metadata;
+    uint32_t addr;
+
+    fseek(disc, fileSystemHeader.metadataStart, 0);
+    for(addr = fileSystemHeader.metadataStart; 
+        addr<fileSystemHeader.fileDataStart; 
+        addr+=sizeof(metadata_t)
+        )
+    {
+        fread(&metadata, sizeof(metadata_t), 1, disc);
+        if( metadata.used )
+        {
+            cout<<"FileName: \""<<metadata.fileName<<"\"; Base: "<<metadata.base<<"; Size: "<<metadata.size<<endl;
+        }       
+    }
+
+
+    return OK;
+}
 
 MFS::MFS(const char* fileSystemName)
 {

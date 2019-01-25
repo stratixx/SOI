@@ -14,7 +14,7 @@ int main(int argc, char * argv[])
 {
 	MFS * fs;
 	MFS::fileHandle_t* fileMFS;
-	uint32_t fileMFSsize = 1024;
+	uint32_t fileMFSsize;
 	MFS::returnCode result;
 	FILE* fileH;
 
@@ -43,6 +43,10 @@ int main(int argc, char * argv[])
 
 		for(int n=3; n<argc; n++)
 		{
+			fileH = fopen(argv[n], "r");
+			fseek(fileH, 0, SEEK_END);
+			fileMFSsize = ftell(fileH);
+
 			cout<<argv[n]<<"... ";
 			fileMFS = fs->openFile(argv[n], MFS::fileMode_t::CREATE, &fileMFSsize);
 			if(fileMFS==nullptr)
@@ -53,6 +57,7 @@ int main(int argc, char * argv[])
 
 			cout<<"ok"<<endl;
 			fs->closeFile(fileMFS);
+			fclose(fileH);
 		}
 	}
 	else
