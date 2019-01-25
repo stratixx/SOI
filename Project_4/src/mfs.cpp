@@ -52,6 +52,8 @@ MFS::returnCode MFS::unmountFileSystem(MFS* fileSystem)
 {
     if(fileSystem)
     {
+        fseek(fileSystem->disc, 0, 0);
+        fwrite(&fileSystem->fileSystemHeader, sizeof(fileSystemHeader_t), 1, fileSystem->disc);
         delete fileSystem;
     }
     return OK;
@@ -94,6 +96,11 @@ MFS::fileHandle_t* MFS::createFile( const char* fileName, uint32_t* size)
     // zapisanie metadanych na dysk
     fseek(disc, addr, 0);
     fwrite(&metadata, sizeof(metadata), 1, disc);
+    fileHandle = new fileHandle_t;
+    *fileHandle = addr;
+    // zapisanie metadanych pliku na dysk
+    fseek(disc, addr, 0);
+    fwrite(&metadata, sizeof(metadata_t), 1, disc);
     lastCode = OK;
     
 
@@ -140,6 +147,7 @@ uint32_t MFS::allocData(uint32_t size)
     {
         fileSystemHeader.fileDataUsed += size;
         lastCode = OK;  
+        printf("|printf1|");
         return fileSystemHeader.fileDataStart;
     }
 
@@ -148,6 +156,7 @@ uint32_t MFS::allocData(uint32_t size)
         {
             fileSystemHeader.fileDataUsed += size;
         lastCode = OK;
+        printf("|printf2|");
             return dataMap[n-1].base + dataMap[n-1].size;
         }
     
@@ -155,6 +164,7 @@ uint32_t MFS::allocData(uint32_t size)
     {
         fileSystemHeader.fileDataUsed += size;
         lastCode = OK;
+        printf("|printf3|");
         return dataMap[fileSystemHeader.metaDataUsed-1].base + dataMap[fileSystemHeader.metaDataUsed-1].size;
     }
 

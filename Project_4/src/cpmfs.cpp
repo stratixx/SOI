@@ -14,7 +14,7 @@ int main(int argc, char * argv[])
 {
 	MFS * fs;
 	MFS::fileHandle_t* fileMFS;
-	uint32_t fileMFSsize;
+	uint32_t fileMFSsize = 1024;
 	MFS::returnCode result;
 	FILE* fileH;
 
