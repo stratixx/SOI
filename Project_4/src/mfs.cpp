@@ -118,7 +118,7 @@ uint32_t MFS::allocData(uint32_t size)
     if(fileSystemHeader.metaDataUsed==0)
     {
         lastCode = OK;  
-        cout<<"|printf0|";
+        //cout<<"|printf0|";
         return fileSystemHeader.fileDataStart;
     }
 
@@ -153,7 +153,7 @@ uint32_t MFS::allocData(uint32_t size)
     if((dataMap[0].base-fileSystemHeader.fileDataStart)>=size)
     {
         lastCode = OK;  
-        cout<<"|printf1|";
+        //cout<<"|printf1|";
         return fileSystemHeader.fileDataStart;
     }
 
@@ -162,7 +162,7 @@ uint32_t MFS::allocData(uint32_t size)
         if( dataMap[n].base - dataMap[n-1].base - dataMap[n-1].size >= size )
         {
             lastCode = OK;
-            cout<<"|printf2|";
+            //cout<<"|printf2|";
             return dataMap[n-1].base + dataMap[n-1].size;
         }
     
@@ -170,7 +170,7 @@ uint32_t MFS::allocData(uint32_t size)
     if( fileSystemHeader.fileSystemSize-dataMap[fileSystemHeader.metaDataUsed-1].base-dataMap[fileSystemHeader.metaDataUsed-1].size>=size )
     {
         lastCode = OK;
-        cout<<"|printf3|";
+        //cout<<"|printf3|";
         return dataMap[fileSystemHeader.metaDataUsed-1].base + dataMap[fileSystemHeader.metaDataUsed-1].size;
     }
     return 0;
@@ -302,7 +302,7 @@ MFS::returnCode MFS::fileList()
         if( metadata.used )
         {
             //cout<<"FileName: \""<<metadata.fileName<<"\"; Base: "<<metadata.base<<"; Size: "<<metadata.size<<endl;
-            cout<<metadata.fileName<<"\t\t";
+            cout<<metadata.fileName<<endl;
         }       
     }
     cout<<endl;
