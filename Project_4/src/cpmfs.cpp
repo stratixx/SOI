@@ -18,34 +18,53 @@ int main(int argc, char * argv[])
 	MFS::returnCode result;
 	FILE* fileH;
 	char* buf;
+	int arg_as_idx = 3;
 
-	if(argc<4 || (0==strcmp("--help", argv[1])) || ((0!=strcmp("-TO", argv[1])) && (0!=strcmp("-FROM", argv[1]))) )
+	if(argc<4 || (0==strcmp("--help", argv[1])) || ((0!=strcmp("-TO", argv[2])) && (0!=strcmp("-FROM", argv[2]))) )
 	{
-		cout<<"Usage: cpmfs -TO <fileSystemName> <linuxFile0> <linuxFile1> ..."<<endl;
-		cout<<"Usage: cpmfs -FROM <fileSystemName> <MFSFile0> <MFSFile1> ..."<<endl;
+		cout<<"Usage:"<<endl;
+		cout<<"cpmfs <fileSystemName> -TO <linuxFile0> <linuxFile1> ..."<<endl;
+		cout<<"cpmfs <fileSystemName> -TO <linuxFile0> <linuxFile1> ... -AS <MFSFile0> <MFSFile1> ..."<<endl;
+		cout<<"cpmfs <fileSystemName> -FROM <MFSFile0> <MFSFile1> ..."<<endl;
 		return -1;
 	}
 
-	fs = MFS::mountFileSystem(argv[2]);
+	fs = MFS::mountFileSystem(argv[1]);
 	if(fs==nullptr)
 	{
 		cout<<"MountFileSystem error! Abort!"<<endl;
 		return -2;
 	}
 
-	if( 0==strcmp("-TO", argv[1]) )
+	for(int n=4; n<argc; n++)
+		if( 0==strcmp("-AS", argv[n]) )
+			{
+				arg_as_idx = n+1;
+				break;
+			}
+
+	if( 0==strcmp("-TO", argv[2]) )
 	{
 		cout<<"Linux --> MFS"<<endl;
+		arg_as_idx;
 
-		for(int n=3; n<argc; n++)
+		for(int lFileN=3; lFileN<argc; lFileN++, arg_as_idx++)
 		{
-			cout<<argv[n]<<"... ";
+			if( arg_as_idx>=argc)
+				arg_as_idx = lFileN;
+			if( 0==strcmp("-AS", argv[lFileN]) )
+			{
+				cout<<"-as ddddd"<<endl;
+				break;
+			}
 
-			fileH = fopen(argv[n], "r");
+			cout<<"copy \""<<argv[lFileN]<<"\" as \""<<argv[arg_as_idx]<<"\"... ";
+
+			fileH = fopen(argv[lFileN], "r");
 			fseek(fileH, 0, SEEK_END);
 			fileSize = ftell(fileH);
 
-			fileMFS = fs->openFile(argv[n], MFS::fileMode_t::CREATE, &fileSize);
+			fileMFS = fs->openFile(argv[arg_as_idx], MFS::fileMode_t::CREATE, &fileSize);
 			if(fileMFS==nullptr)
 			{
 				cout<<"MFS openFile error: "<<fs->lastCode<<endl;
@@ -65,7 +84,7 @@ int main(int argc, char * argv[])
 			fclose(fileH);
 		}
 	}
-	else
+	else if( 0==strcmp("-FROM", argv[2]) )
 	{
 		cout<<"MFS --> Linux"<<endl;
 
