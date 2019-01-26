@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
 	FILE* fileH;
 	char* buf;
 
-	if(argc<4 || ((0!=strcmp("-TO", argv[1])) && (0!=strcmp("-FROM", argv[1]))) )
+	if(argc<4 || (0==strcmp("--help", argv[1])) || ((0!=strcmp("-TO", argv[1])) && (0!=strcmp("-FROM", argv[1]))) )
 	{
 		cout<<"Usage: cpmfs -TO <fileSystemName> <linuxFile0> <linuxFile1> ..."<<endl;
 		cout<<"Usage: cpmfs -FROM <fileSystemName> <MFSFile0> <MFSFile1> ..."<<endl;

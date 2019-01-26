@@ -99,6 +99,7 @@ class MFS
     returnCode writeFile( const fileHandle_t* fileHandle, const void* src, uint32_t offset, uint32_t length );
     returnCode deleteFile( const char* fileName );
     returnCode fileList();
+    returnCode systemInfo();
 
     private:
     MFS(const char* fileSystemName);

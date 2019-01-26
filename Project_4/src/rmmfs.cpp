@@ -6,6 +6,7 @@
 #include "../inc/rmmfs.h"
 #include "../inc/mfs.h"
 #include <iostream>
+#include <string.h>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ int main(int argc, char * argv[])
 	MFS* fs;
 	MFS::returnCode code;
 	
-	if( argc<=2 )
+	if( argc<2 || (0==strcmp("--help", argv[1])) )
 	{
 		cout<<"Usage: rmmfs <fileSystemName> <MFSFile0> <MFSFile1>"<<endl;
 		return -1;

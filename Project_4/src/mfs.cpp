@@ -305,6 +305,23 @@ MFS::returnCode MFS::fileList()
     return OK;
 }
 
+MFS::returnCode MFS::systemInfo()
+{
+
+    cout<<"name:                  \""<<fileSystemName<<"\""<<endl;
+    cout<<"guardText:             \""<<fileSystemHeader.guardText<<"\""<<endl;
+    cout<<"fileSystemSize:        "<<fileSystemHeader.fileSystemSize/1024<<" KB"<<endl;
+    cout<<"metadata starts at:    "<<fileSystemHeader.metadataStart<<endl;
+    cout<<"metadata elements:     "<<fileSystemHeader.metadataIndex<<endl;
+    cout<<"metadata used elements:"<<fileSystemHeader.metaDataUsed<<endl;
+    cout<<"fileData starts at:    "<<fileSystemHeader.fileDataStart<<endl;
+    cout<<"fileDataSize:          "<<fileSystemHeader.fileDataSize/1024<<" KB"<<endl;
+    cout<<"fileDataUsed:          "<<(float)(100.0*fileSystemHeader.fileDataUsed/fileSystemHeader.fileDataSize)<<"%"<<endl;
+    cout<<"fileSystem efficiency: "<<(float)(100.0*fileSystemHeader.fileDataSize/fileSystemHeader.fileSystemSize)<<"%"<<endl;
+
+    return OK;
+}
+
 MFS::MFS(const char* fileSystemName)
 {
     //uint32_t size = strlen(fileSystemName);
