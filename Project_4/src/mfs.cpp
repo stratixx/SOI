@@ -97,6 +97,21 @@ MFS::fileHandle_t* MFS::createFile( const char* fileName, uint32_t* size)
     metadata.size = *size;
     strcpy(metadata.fileName, fileName);
     metadata.used = true;
+    // aktualziacja mapy zajętości
+    dataMap[fileSystemHeader.metaDataUsed-1].base = metadata.base;
+    dataMap[fileSystemHeader.metaDataUsed-1].size = metadata.size;
+    dataMap[fileSystemHeader.metaDataUsed-1].metadataAddr = addr;
+    // posortowanie mapy zajętości
+    for(uint32_t i=0; i<(fileSystemHeader.metaDataUsed-1); i++)
+        for(uint32_t j=0; j<(fileSystemHeader.metaDataUsed-1); j++)
+            if( dataMap[j].base > dataMap[j+1].base )
+            {
+                dataBlock_t tmp;
+                tmp = dataMap[j];
+                dataMap[j] = dataMap[j+1];
+                dataMap[j+1] = tmp;
+            }
+
     // zapisanie metadanych na dysk
     fseek(disc, addr, 0);
     fwrite(&metadata, sizeof(metadata_t), 1, disc);
@@ -122,33 +137,6 @@ uint32_t MFS::allocData(uint32_t size)
         return fileSystemHeader.fileDataStart;
     }
 
-    // stworzenie mapy zajetosci sekcji danych
-    uint32_t i=0;
-    fseek(disc, fileSystemHeader.metadataStart, 0);
-    for(uint32_t n=0; n<fileSystemHeader.metadataIndex; n++)
-    {
-        fread(&metadata, sizeof(metadata_t), 1, disc);
-        if( metadata.used )
-        {
-            dataMap[i].base = metadata.base;
-            dataMap[i].size = metadata.size;
-            dataMap[i].metadataAddr = fileSystemHeader.metadataStart;
-            dataMap[i].metadataAddr+= n*sizeof(metadata_t); 
-            i++;
-        }     
-    }
-
-    // sortowanie zajetych obszarow
-    for(uint32_t i=0; i<(fileSystemHeader.metaDataUsed-1); i++)
-        for(uint32_t j=0; j<(fileSystemHeader.metaDataUsed-1); j++)
-            if( dataMap[j].base > dataMap[j+1].base )
-            {
-                dataBlock_t tmp;
-                tmp = dataMap[j];
-                dataMap[j] = dataMap[j+1];
-                dataMap[j+1] = tmp;
-            }
-
     // przydzielenie miejsca przed pierwszym plikiem
     if((dataMap[0].base-fileSystemHeader.fileDataStart)>=size)
     {
@@ -173,6 +161,8 @@ uint32_t MFS::allocData(uint32_t size)
         cout<<"|printf3|";
         return dataMap[fileSystemHeader.metaDataUsed-1].base + dataMap[fileSystemHeader.metaDataUsed-1].size;
     }
+
+    // nie znaleziono miejsca na dane
     return 0;
 }
 
@@ -284,6 +274,22 @@ MFS::returnCode MFS::deleteFile( const char* fileName )
     fileSystemHeader.metaDataUsed--;
     fseek(disc, *fileHandle, 0);
     fwrite(&metadata, sizeof(metadata_t), 1, disc);
+
+
+    // aktualizacja mapy zajętości
+    dataMap[fileSystemHeader.metaDataUsed-1].base = metadata.base;
+    dataMap[fileSystemHeader.metaDataUsed-1].size = metadata.size;
+    dataMap[fileSystemHeader.metaDataUsed-1].metadataAddr = addr;
+    // posortowanie mapy zajętości
+    for(uint32_t i=0; i<(fileSystemHeader.metaDataUsed-1); i++)
+        for(uint32_t j=0; j<(fileSystemHeader.metaDataUsed-1); j++)
+            if( dataMap[j].base > dataMap[j+1].base )
+            {
+                dataBlock_t tmp;
+                tmp = dataMap[j];
+                dataMap[j] = dataMap[j+1];
+                dataMap[j+1] = tmp;
+            }
     return OK;
 }
 
@@ -348,8 +354,24 @@ MFS::MFS(const char* fileSystemName)
         return;
     }
     
-    dataMap = new dataBlock_t[fileSystemHeader.metadataIndex];
 
+    // stworzenie mapy zajetosci sekcji danych
+    dataMap = new dataBlock_t[fileSystemHeader.metadataIndex];
+    metadata_t metadata;
+    uint32_t i=0;
+    fseek(disc, fileSystemHeader.metadataStart, 0);
+    for(uint32_t n=0; n<fileSystemHeader.metadataIndex; n++)
+    {
+        fread(&metadata, sizeof(metadata_t), 1, disc);
+        if( metadata.used )
+        {
+            dataMap[i].base = metadata.base;
+            dataMap[i].size = metadata.size;
+            dataMap[i].metadataAddr = fileSystemHeader.metadataStart;
+            dataMap[i].metadataAddr+= n*sizeof(metadata_t); 
+            i++;
+        }     
+    }
     lastCode = OK;
 }
 
