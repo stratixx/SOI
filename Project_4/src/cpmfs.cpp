@@ -20,6 +20,8 @@ int main(int argc, char * argv[])
 	char* buf;
 	int arg_as_idx = 3;
 
+	cout<<"cpmfs"<<endl;
+
 	if(argc<4 || (0==strcmp("--help", argv[1])) || ((0!=strcmp("-TO", argv[2])) && (0!=strcmp("-FROM", argv[2]))) )
 	{
 		cout<<"Usage:"<<endl;

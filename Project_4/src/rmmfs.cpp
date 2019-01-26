@@ -15,6 +15,8 @@ int main(int argc, char * argv[])
 	MFS* fs;
 	MFS::returnCode code;
 	
+	cout<<"rmmfs"<<endl;
+	
 	if( argc<2 || (0==strcmp("--help", argv[1])) )
 	{
 		cout<<"Usage: rmmfs <fileSystemName> <MFSFile0> <MFSFile1>"<<endl;

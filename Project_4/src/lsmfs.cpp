@@ -14,6 +14,8 @@ int main(int argc, char * argv[])
 {
 	MFS* fs;
 
+	cout<<"lsmfs"<<endl;
+
 	if( argc<2 || (0==strcmp("--help", argv[1])) )
 	{
 		cout<<"Usage: lsmfs <fileSystemName>"<<endl;

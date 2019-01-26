@@ -301,9 +301,11 @@ MFS::returnCode MFS::fileList()
         fread(&metadata, sizeof(metadata_t), 1, disc);
         if( metadata.used )
         {
-            cout<<"FileName: \""<<metadata.fileName<<"\"; Base: "<<metadata.base<<"; Size: "<<metadata.size<<endl;
+            //cout<<"FileName: \""<<metadata.fileName<<"\"; Base: "<<metadata.base<<"; Size: "<<metadata.size<<endl;
+            cout<<metadata.fileName<<"\t\t";
         }       
     }
+    cout<<endl;
 
 
     return OK;
@@ -322,6 +324,46 @@ MFS::returnCode MFS::systemInfo()
     cout<<"fileDataSize:          "<<fileSystemHeader.fileDataSize/1024<<" KB"<<endl;
     cout<<"fileDataUsed:          "<<(float)(100.0*fileSystemHeader.fileDataUsed/fileSystemHeader.fileDataSize)<<"%"<<endl;
     cout<<"fileSystem efficiency: "<<(float)(100.0*fileSystemHeader.fileDataSize/fileSystemHeader.fileSystemSize)<<"%"<<endl;
+
+    cout<<"dataMap:"<<endl;
+    
+    metadata_t metadata;
+    // stworzenie mapy zajetosci sekcji danych
+    uint32_t i=0;
+    fseek(disc, fileSystemHeader.metadataStart, 0);
+    for(uint32_t n=0; n<fileSystemHeader.metadataIndex; n++)
+    {
+        fread(&metadata, sizeof(metadata_t), 1, disc);
+        if( metadata.used )
+        {
+            dataMap[i].base = metadata.base;
+            dataMap[i].size = metadata.size;
+            dataMap[i].metadataAddr = fileSystemHeader.metadataStart;
+            dataMap[i].metadataAddr+= n*sizeof(metadata_t); 
+            i++;
+        }     
+    }
+
+    if(fileSystemHeader.metaDataUsed>0)
+    {            
+        cout<<"base: \tsize: \tend:"<<endl;
+
+        // sortowanie zajetych obszarow
+        for(uint32_t i=0; i<(fileSystemHeader.metaDataUsed-1); i++)
+            for(uint32_t j=0; j<(fileSystemHeader.metaDataUsed-1); j++)
+                if( dataMap[j].base > dataMap[j+1].base )
+                {
+                    dataBlock_t tmp;
+                    tmp = dataMap[j];
+                    dataMap[j] = dataMap[j+1];
+                    dataMap[j+1] = tmp;
+                }
+
+        for(uint32_t n=0; n<fileSystemHeader.metaDataUsed; n++)
+            cout<<dataMap[n].base<<"\t"<<dataMap[n].size<<"\t"<<dataMap[n].base+dataMap[n].size<<endl;
+    }
+    else
+        cout<<"Empty"<<endl;
 
     return OK;
 }

@@ -15,6 +15,8 @@ int main(int argc, char * argv[])
 {
 	MFS * fs;
 
+	cout<<"mkmfs"<<endl;
+	
 	if(argc<3 || (0==strcmp("--help", argv[1])) )
 	{
 		cout<<"Usage: mkmfs <fileSystemName> <fileSystemSize[kB]>"<<endl;

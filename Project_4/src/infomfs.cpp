@@ -16,6 +16,7 @@ int main(int argc, char * argv[])
 	MFS * fs;
 	float eff;
 
+	cout<<"infomfs"<<endl;
 
 	if(argc<2 || (0==strcmp("--help", argv[1])) )
 	{
