@@ -123,16 +123,18 @@ uint32_t MFS::allocData(uint32_t size)
     }
 
     // stworzenie mapy zajetosci sekcji danych
+    uint32_t i=0;
     fseek(disc, fileSystemHeader.metadataStart, 0);
-    for(uint32_t n=0; n<fileSystemHeader.metaDataUsed; n++)
+    for(uint32_t n=0; n<fileSystemHeader.metadataIndex; n++)
     {
         fread(&metadata, sizeof(metadata_t), 1, disc);
         if( metadata.used )
         {
-            dataMap[n].base = metadata.base;
-            dataMap[n].size = metadata.size;
-            dataMap[n].metadataAddr = fileSystemHeader.metadataStart;
-            dataMap[n].metadataAddr+= n*sizeof(metadata_t); 
+            dataMap[i].base = metadata.base;
+            dataMap[i].size = metadata.size;
+            dataMap[i].metadataAddr = fileSystemHeader.metadataStart;
+            dataMap[i].metadataAddr+= n*sizeof(metadata_t); 
+            i++;
         }     
     }
 
@@ -147,6 +149,7 @@ uint32_t MFS::allocData(uint32_t size)
                 dataMap[j+1] = tmp;
             }
 
+    // przydzielenie miejsca przed pierwszym plikiem
     if((dataMap[0].base-fileSystemHeader.fileDataStart)>=size)
     {
         lastCode = OK;  
@@ -154,6 +157,7 @@ uint32_t MFS::allocData(uint32_t size)
         return fileSystemHeader.fileDataStart;
     }
 
+    // przydzielenie miejsca pomiędzy plikami
     for(int n=1; n<(fileSystemHeader.metaDataUsed-1); n++)
         if( dataMap[n].base - dataMap[n-1].base - dataMap[n-1].size >= size )
         {
@@ -162,13 +166,13 @@ uint32_t MFS::allocData(uint32_t size)
             return dataMap[n-1].base + dataMap[n-1].size;
         }
     
-    if( fileSystemHeader.fileSystemSize-dataMap[fileSystemHeader.metaDataUsed-1].base-dataMap[fileSystemHeader.metaDataUsed-1].size )
+    // przydzielenie miejsca po ostatnim pliku
+    if( fileSystemHeader.fileSystemSize-dataMap[fileSystemHeader.metaDataUsed-1].base-dataMap[fileSystemHeader.metaDataUsed-1].size>=size )
     {
         lastCode = OK;
         cout<<"|printf3|";
         return dataMap[fileSystemHeader.metaDataUsed-1].base + dataMap[fileSystemHeader.metaDataUsed-1].size;
     }
-
     return 0;
 }
 
