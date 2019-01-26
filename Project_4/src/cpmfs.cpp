@@ -53,17 +53,14 @@ int main(int argc, char * argv[])
 			if( arg_as_idx>=argc)
 				arg_as_idx = lFileN;
 			if( 0==strcmp("-AS", argv[lFileN]) )
-			{
-				cout<<"-as ddddd"<<endl;
 				break;
-			}
 
 			cout<<"copy \""<<argv[lFileN]<<"\" as \""<<argv[arg_as_idx]<<"\"... ";
 
 			fileH = fopen(argv[lFileN], "r");
 			fseek(fileH, 0, SEEK_END);
 			fileSize = ftell(fileH);
-
+			
 			fileMFS = fs->openFile(argv[arg_as_idx], MFS::fileMode_t::CREATE, &fileSize);
 			if(fileMFS==nullptr)
 			{

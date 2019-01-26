@@ -144,7 +144,7 @@ uint32_t MFS::allocData(uint32_t size)
                 dataBlock_t tmp;
                 tmp = dataMap[j];
                 dataMap[j] = dataMap[j+1];
-                dataMap[j+1] = dataMap[j];
+                dataMap[j+1] = tmp;
             }
 
     if((dataMap[0].base-fileSystemHeader.fileDataStart)>=size)
